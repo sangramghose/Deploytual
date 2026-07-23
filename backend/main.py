@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
-from routes import csv_routes, ai_routes, db_routes, ml_routes
+from routes import csv_routes, ai_routes, db_routes, ml_routes, report_routes
 
 # Ensure upload folder exists
 os.makedirs(settings.UPLOAD_FOLDER, exist_ok=True)
@@ -23,6 +23,7 @@ app.include_router(csv_routes.router)
 app.include_router(ai_routes.router)
 app.include_router(db_routes.router)
 app.include_router(ml_routes.router)
+app.include_router(report_routes.router)   # <-- Added report router
 
 @app.get("/")
 def read_root():
