@@ -2,7 +2,7 @@
 
 ### Deploy intelligence. Any data. Anywhere.
 
-> An AI-powered analytics platform that unifies data connectivity, natural language querying, and automated machine learning into a single, deployable engine—ready to be dropped into any environment.
+> An AI-powered analytics platform that unifies data connectivity, natural language querying, and automated machine learning into a single, deployable engine-ready to be dropped into any environment.
 
 ---
 
