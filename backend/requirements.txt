@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pandas
+openpyxl
+python-multipart
+mysql-connector-python
+python-dotenv
+scikit-learn
+prophet
+matplotlib
+aiofiles
