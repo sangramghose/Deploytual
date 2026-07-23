@@ -10,3 +10,6 @@ prophet
 matplotlib
 aiofiles
 reportlab
+python-jose[cryptography]
+passlib[bcrypt]
+google-auth
