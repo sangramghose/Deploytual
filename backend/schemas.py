@@ -22,6 +22,7 @@ class QueryResponse(BaseModel):
     answer: str
     insights: List[InsightItem] = []
     suggested_followups: List[str] = []
+    generated_code: Optional[str] = None      # 👈 NEW field for Explainable AI
 
 # --- Database ---
 class DBConnectRequest(BaseModel):
