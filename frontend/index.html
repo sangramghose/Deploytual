@@ -520,6 +520,7 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
     <li><button class="nav-tab" data-page="dashboard" onclick="showPage('dashboard')">Dashboard</button></li>
     <li><button class="nav-tab" data-page="ask" onclick="showPage('ask')">Ask AI</button></li>
     <li><button class="nav-tab" data-page="ml" onclick="showPage('ml')">AutoML</button></li>
+    <li><button class="nav-tab" data-page="clean" onclick="showPage('clean')">🧹 Clean</button></li>
     <li><button class="nav-tab" data-page="history" onclick="showPage('history')">History</button></li>
   </ul>
   <div class="nav-right">
@@ -571,6 +572,7 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
           <button class="qa-btn" onclick="showPage('dashboard')"><span class="emo">📊</span> Dashboard</button>
           <button class="qa-btn" onclick="showPage('ask')"><span class="emo">🤖</span> Ask AI</button>
           <button class="qa-btn" onclick="showPage('ml')"><span class="emo">🧬</span> AutoML</button>
+          <button class="qa-btn" onclick="showPage('clean')"><span class="emo">🧹</span> Clean data</button>
         </div>
       </div>
 
@@ -582,7 +584,7 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
         </div>
         <div class="hero-badge alt">
           <div class="stamp">▲ New</div>
-          <div class="stamp-title">AutoML <span>engine.</span></div>
+          <div class="stamp-title">AutoML <span>engine</span>.</div>
           <div class="stamp-sub">One-click forecasts, anomaly detection & executive PDF reports.</div>
         </div>
       </div>
@@ -659,11 +661,11 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
       </div>
       <div class="feat-card">
         <div>
-          <div class="feat-num">006 / REPORT</div>
-          <div class="feat-icon">📄</div>
-          <div class="feat-title">Executive PDF Reports</div>
+          <div class="feat-num">006 / CLEAN</div>
+          <div class="feat-icon">🧹</div>
+          <div class="feat-title">AI Data Cleaning</div>
         </div>
-        <div class="feat-desc">Generate polished, AI-written reports with charts and forecasts. Boardroom-ready.</div>
+        <div class="feat-desc">Detects missing values, outliers, and formatting issues. Offers one‑click fixes.</div>
       </div>
     </div>
   </section>
@@ -989,6 +991,20 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
   </div>
 </div>
 
+<!-- ═════ CLEAN ═════ -->
+<div id="clean" class="page-content">
+  <div class="dash">
+    <h1 class="page-title">🧹 <em>Data Cleaning</em> Studio.</h1>
+    <p class="page-desc">Identify and fix data quality issues with one click.</p>
+
+    <div class="chart-container">
+      <div class="chart-title">🔎 Issues detected</div>
+      <button class="btn-submit" onclick="scanDataQuality()">Scan for issues →</button>
+      <div id="clean-result" style="margin-top:24px"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ═════ HISTORY ═════ -->
 <div id="history" class="page-content">
   <div class="dash">
@@ -1014,7 +1030,7 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
     <a href="#" onclick="showPage('upload')">Upload dataset</a>
     <a href="#" onclick="showPage('database')">Connect database</a>
     <a href="#" onclick="showPage('ml')">AutoML engine</a>
-    <a href="#" onclick="showPage('dashboard')">Dashboard</a>
+    <a href="#" onclick="showPage('clean')">Data cleaning</a>
   </div>
   <div class="foot-col">
     <h4>Company</h4>
@@ -1031,7 +1047,7 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
 
 <script>
 // ════════════════════════════════════════
-// API CONFIGURATION (unchanged)
+// API CONFIGURATION
 // ════════════════════════════════════════
 const API_BASE = "https://deploytual.onrender.com";
 
@@ -1240,5 +1256,615 @@ async function handleExcelUpload(file){
     document.getElementById('analyze-cols').textContent = columns.length;
     document.getElementById('analyze-size').textContent = (file.size/1024).toFixed(2) + ' KB';
     document.getElementById("duplicate-data").innerHTML = `<div style="color:var(--mint);font-weight:600">✓ Excel file uploaded and converted for analysis</div>`;
-    uploadArea.innerHTML = `<div style="color:var(-<response clipped><NOTE>To save on context only part of this file has been shown to you. You should retry this tool after you have searched inside the file with `grep -n` in order to find the line numbers of what you are looking for.</NOTE>
+    uploadArea.innerHTML = `<div style="color:var(--mint);font-weight:600;font-family:'Fraunces',serif;font-size:1.3rem">✓ File uploaded: ${escapeHTML(file.name)}</div>`;
+    addToRecentUploads(file);
+    createConversationForSource("excel", uploadData.file_id, file.name);
+  }catch(error){
+    alert("Excel upload failed. Please check the file and try again.");
+  }
+}
 
+function renderAnalyzeSchema(columns, rows){
+  const schemaTable = document.getElementById('schema-table');
+  schemaTable.innerHTML = '';
+  columns.forEach((col, index) => {
+    const values = rows.slice(1).map(row => row.split(',')[index]?.trim()).filter(v => v !== '');
+    let dataType = 'Text';
+    if(values.length && values.every(v => !isNaN(v) && Number.isInteger(Number(v)))) dataType = 'Integer';
+    else if(values.length && values.every(v => !isNaN(v))) dataType = 'Float';
+    const uniqueValues = new Set(values).size;
+    schemaTable.innerHTML += `<tr><td style="padding:14px 18px">${escapeHTML(col)}</td><td style="padding:14px 18px"><span style="background:var(--ink);color:var(--paper);padding:3px 10px;border-radius:100px;font-size:.78rem;font-family:'JetBrains Mono',monospace">${dataType}</span></td><td style="padding:14px 18px;color:var(--mint)">100%</td><td style="padding:14px 18px">${uniqueValues}</td></tr>`;
+  });
+}
+
+function csvCell(value){
+  const text = String(value ?? '');
+  if(/[",\n]/.test(text)) return `"${text.replaceAll('"', '""')}"`;
+  return text;
+}
+
+async function uploadToBackend(file){
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await fetch(`${API_BASE}/api/csv/upload`, { method: "POST", body: formData });
+  if(!response.ok){
+    const errorText = await response.text();
+    throw new Error(`Upload failed with ${response.status}: ${errorText}`);
+  }
+  const contentType = response.headers.get("content-type") || "";
+  if(!contentType.includes("application/json")){
+    const responseText = await response.text();
+    throw new Error(`Expected JSON upload response, received: ${responseText.slice(0, 120)}`);
+  }
+  const data = await response.json();
+  uploadedFileId = data.file_id;
+  return data;
+}
+
+function viewFile(){
+  if(uploadedRows.length === 0){ alert("Please upload a file first"); return; }
+  document.getElementById("viewer-filename").textContent = uploadedFileName;
+  document.getElementById("viewer-rows").textContent = uploadedRows.length - 1;
+  document.getElementById("viewer-cols").textContent = uploadedColumns.length;
+  const table = document.getElementById("viewer-table");
+  table.innerHTML = "";
+  let headerRow = "<tr>";
+  uploadedColumns.forEach(col=>{ headerRow += `<th style="padding:14px 18px">${escapeHTML(col)}</th>`; });
+  headerRow += "</tr>";
+  table.innerHTML += headerRow;
+  uploadedRows.slice(1).forEach(row=>{
+    let cells = row.split(',');
+    let rowHTML = "<tr>";
+    cells.forEach(cell=>{ rowHTML += `<td style="padding:14px 18px;border-bottom:1px solid var(--line)">${escapeHTML(cell)}</td>`; });
+    rowHTML += "</tr>";
+    table.innerHTML += rowHTML;
+  });
+  showPage("viewer");
+}
+
+async function uploadChatFile(file){
+  if(!file) return;
+  let data;
+  try{ data = await uploadToBackend(file); }catch(error){ alert("File upload failed."); return; }
+  uploadedFileName = file.name;
+  createConversationForSource(sourceTypeFromFile(file), data.file_id, file.name);
+  const messagesDiv = document.getElementById("chat-messages");
+  const assistantMsg = document.createElement("div");
+  assistantMsg.className = "message assistant";
+  const messageContent = document.createElement("div");
+  messageContent.className = "message-content";
+  messageContent.textContent = `📎 ${file.name} uploaded successfully.`;
+  assistantMsg.appendChild(messageContent);
+  messagesDiv.appendChild(assistantMsg);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  document.getElementById("chat-file").value = "";
+}
+
+function addToRecentUploads(file, fileId = uploadedFileId){
+  const recentFiles = document.getElementById("recent-files");
+  const fileItem = document.createElement("div");
+  fileItem.className = "file-item";
+  fileItem.innerHTML = `
+    <div class="file-icon">📊</div>
+    <div class="file-info">
+      <div class="file-name">${escapeHTML(file.name)}</div>
+      <div class="file-meta">Just uploaded</div>
+    </div>
+    <div class="file-action">
+      <button class="file-btn" onclick="analyzeDataset('${escapeInlineHandlerString(fileId)}')">Analyze</button>
+      <button class="file-btn" onclick="viewFile()">View</button>
+    </div>`;
+  recentFiles.prepend(fileItem);
+}
+
+async function analyzeDataset(datasetId = null) {
+  const activeConversation = getActiveConversation();
+  const fileId = datasetId || (activeConversation && ["csv","excel"].includes(activeConversation.sourceType) ? activeConversation.sourceId : uploadedFileId);
+  if(!fileId){
+    if(uploadedRows.length > 0){ showPage("analyze"); return; }
+    alert("Please upload a file first.");
+    return;
+  }
+  try{
+    const response = await fetch(`${API_BASE}/api/csv/${fileId}/read?limit=5`);
+    if(!response.ok) throw new Error(`Read failed with ${response.status}`);
+    const data = await response.json();
+    console.log(data);
+  }catch(error){
+    console.error("Analyze backend read failed:", error);
+    if(uploadedRows.length === 0){ alert("Please upload a file first."); return; }
+  }
+  showPage("analyze");
+}
+
+// ── DATABASE ──
+let selectedDb='mysql';
+function selectDb(db){
+  selectedDb=db;
+  document.querySelectorAll('.db-option').forEach(opt=>opt.classList.remove('selected'));
+  event.target.closest('.db-option').classList.add('selected');
+  document.getElementById('db-form-container').style.display='block';
+  const dbNames={postgres:'PostgreSQL',mysql:'MySQL',snowflake:'Snowflake',bigquery:'BigQuery',redshift:'Redshift',mongodb:'MongoDB'};
+  document.getElementById('form-title').textContent=dbNames[db]+' Connection';
+}
+
+async function testConnection(){
+  const statusEl = document.getElementById("connection-status");
+  statusEl.style.display = "block";
+  statusEl.textContent = "Testing connection...";
+  try{
+    const response = await fetch(`${API_BASE}/api/database/test`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ host:"localhost", port:3306, database:"datamind", username:"root", password:"" })
+    });
+    const data = await response.json();
+    if(data.success){ statusEl.textContent = "✅ Connection Successful"; }
+    else{ statusEl.textContent = "❌ " + data.message; }
+  }catch(err){
+    statusEl.textContent = "❌ Connection Failed";
+    console.error(err);
+  }
+}
+
+async function connectDatabase(){
+  const host = document.getElementById("db-host").value;
+  const port = Number(document.getElementById("db-port").value);
+  const database = document.getElementById("db-name").value;
+  const username = document.getElementById("db-user").value;
+  const password = document.getElementById("db-password").value;
+  const status = document.getElementById("connection-status");
+  status.style.display = "block";
+  status.textContent = "Connecting...";
+  try{
+    const response = await fetch(`${API_BASE}/api/database/tables`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ host, port, database, username, password })
+    });
+    const data = await response.json();
+    if(!response.ok) throw new Error(data.detail || "Connection failed");
+    localStorage.setItem("dbHost", host);
+    localStorage.setItem("dbPort", port);
+    localStorage.setItem("dbDatabase", database);
+    localStorage.setItem("dbUser", username);
+    localStorage.setItem("dbPassword", password);
+    localStorage.setItem("connectedTables", JSON.stringify(data.tables));
+    status.innerHTML = `<div class="connection-test"><b>✅ Database Connected</b><br>${data.tables.length} table(s) synced.</div>`;
+    createConversationForSource("mysql", null, database);
+  }catch(err){
+    console.error(err);
+    status.textContent = "❌ " + err.message;
+  }
+}
+
+function loadConnectedTables(){
+  const tables = JSON.parse(localStorage.getItem("connectedTables")) || [];
+  document.getElementById("dashboard-table-count").innerText = tables.length;
+  document.getElementById("dashboard-db-name").innerText = localStorage.getItem("dbDatabase") || "Not Connected";
+  const card = document.getElementById("connected-db-card");
+  const list = document.getElementById("connected-tables-list");
+  if(tables.length===0){ card.style.display="none"; return; }
+  card.style.display="block";
+  list.innerHTML="";
+  tables.forEach(table=>{
+    list.innerHTML+=`<div class="table-card" onclick="viewTable('${escapeInlineHandlerString(table)}')">🗄 ${escapeHTML(table)}</div>`;
+  });
+}
+
+async function viewTable(tableName){
+  showPage("table-view");
+  document.getElementById("table-title").innerText = tableName;
+  const response = await fetch(`${API_BASE}/api/database/table/${tableName}`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      host:localStorage.getItem("dbHost"),
+      port:Number(localStorage.getItem("dbPort")),
+      database:localStorage.getItem("dbDatabase"),
+      username:localStorage.getItem("dbUser"),
+      password:localStorage.getItem("dbPassword")
+    })
+  });
+  const data = await response.json();
+  renderTable(data.rows);
+  document.getElementById("table-search").oninput = filterTable;
+}
+
+function renderTable(rows){
+  if(sortColumn === "") currentTableRows = [...rows];
+  const container = document.getElementById("table-content");
+  if(!rows || rows.length===0){ container.innerHTML = `<div class="empty-table">No data found.</div>`; return; }
+  let html = `<table class="data-table"><thead><tr>`;
+  Object.keys(rows[0]).forEach(col=>{ html += `<th onclick="sortTable('${escapeInlineHandlerString(col)}')" style="cursor:pointer">${escapeHTML(String(col).toUpperCase())}</th>`; });
+  html += `</tr></thead><tbody>`;
+  rows.forEach(row=>{
+    html += "<tr>";
+    Object.values(row).forEach(value=>{
+      if(typeof value==="number") html += `<td>${value.toLocaleString()}</td>`;
+      else html += `<td>${escapeHTML(value)}</td>`;
+    });
+    html += "</tr>";
+  });
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+}
+
+function filterTable(){
+  const text = document.getElementById("table-search").value.toLowerCase();
+  const filtered = currentTableRows.filter(row => Object.values(row).some(value => String(value).toLowerCase().includes(text)));
+  renderTable(filtered);
+}
+
+function sortTable(column){
+  if(sortColumn === column){ sortAscending = !sortAscending; }
+  else{ sortColumn = column; sortAscending = true; }
+  currentTableRows.sort((a,b)=>{
+    let x = a[column], y = b[column];
+    if(!isNaN(x) && !isNaN(y)) return sortAscending ? x-y : y-x;
+    x = String(x).toLowerCase();
+    y = String(y).toLowerCase();
+    return x < y ? (sortAscending ? -1 : 1) : x > y ? (sortAscending ? 1 : -1) : 0;
+  });
+  renderTable(currentTableRows);
+}
+
+// ── CHAT ──
+async function sendMessage(){
+  const input=document.getElementById('chat-input');
+  const msg=input.value.trim();
+  if(!msg)return;
+  const messagesDiv=document.getElementById('chat-messages');
+  const userMsg=document.createElement('div');
+  userMsg.className='message user';
+  const userContent=document.createElement('div');
+  userContent.className='message-content';
+  userContent.textContent=msg;
+  userMsg.appendChild(userContent);
+  messagesDiv.appendChild(userMsg);
+  input.value='';
+  messagesDiv.scrollTop=messagesDiv.scrollHeight;
+
+  const assistantMsg=document.createElement('div');
+  assistantMsg.className='message assistant';
+  const assistantContent=document.createElement('div');
+  assistantContent.className='message-content';
+  assistantContent.textContent='Analyzing...';
+  assistantMsg.appendChild(assistantContent);
+  messagesDiv.appendChild(assistantMsg);
+  messagesDiv.scrollTop=messagesDiv.scrollHeight;
+
+  const chat = getActiveConversation();
+  if(!chat || !chat.sourceType){
+    assistantContent.textContent='Please upload a dataset or connect a database first.';
+    return;
+  }
+  assistantContent.textContent = chat.sourceType === "mysql" ? "Analyzing the connected database..." : "Analyzing the uploaded dataset...";
+  chat.messages.push({ role:"user", text:msg });
+  try{
+    let response;
+    if(chat.sourceType === "mysql"){
+      response = await fetch(`${API_BASE}/api/database/chat`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ question:msg })
+      });
+    }else if(["csv","excel"].includes(chat.sourceType) && chat.sourceId){
+      response = await fetch(`${API_BASE}/api/ai/query-local`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ file_id:chat.sourceId, question:msg, max_rows:500 })
+      });
+    }else{
+      throw new Error("No valid data source.");
+    }
+    if(!response.ok) throw new Error(await response.text());
+    const data = await response.json();
+    assistantContent.style.whiteSpace = "pre-line";
+    const engineLabel = chat.sourceType === "mysql" ? `Generated SQL:\n\n${data.sql || "Not returned"}` : `Analysis Engine: ${data.model_used || "Deploytual Analytics Engine"}`;
+    const chartHtml = renderChatCharts(data.charts || []);
+    assistantContent.innerHTML = `${escapeHTML(data.answer)}${chartHtml}<hr><small style="color:var(--muted);white-space:pre-wrap">${escapeHTML(engineLabel)}</small>`;
+    chat.messages.push({ role:"assistant", text:data.answer });
+    saveChatHistory();
+    messagesDiv.scrollTop=messagesDiv.scrollHeight;
+  }catch(error){
+    console.error("Chat query failed:", error);
+    assistantContent.textContent = 'I could not complete the query. Please try again.';
+    chat.messages.push({ role:"assistant", text:error.toString() });
+    saveChatHistory();
+  }
+}
+
+document.getElementById('chat-input').addEventListener('keypress',e=>{if(e.key==='Enter')sendMessage()});
+
+function setQuery(q){ document.getElementById('search-input').value=q; }
+function triggerSearch(){
+  const q=document.getElementById('search-input').value;
+  if(!q)return;
+  document.getElementById('search-input').value='Analyzing: '+q+'...';
+  setTimeout(()=>{document.getElementById('search-input').value=q},1800);
+}
+
+// ── HISTORY ──
+function renderHistory(){
+  const container = document.getElementById("history-list");
+  if(!container) return;
+  container.innerHTML="";
+  if(chatHistory.length === 0){
+    container.innerHTML = `<div class="history-item"><div class="history-type">💬</div><div class="history-info"><div class="history-query">No saved chats yet</div><div class="history-time">Start a chat in Ask AI.</div></div><div class="history-status">Empty</div></div>`;
+    return;
+  }
+  chatHistory.forEach(chat=>{
+    container.innerHTML += `<div class="history-item" onclick="openChat('${escapeInlineHandlerString(chat.id)}')"><div class="history-type">💬</div><div class="history-info"><div class="history-query">${escapeHTML(chat.title)}</div><div class="history-time">${escapeHTML(chat.sourceName || chat.fileName || "Dataset")} • ${escapeHTML(sourceLabel(chat.sourceType))} • ${escapeHTML(chat.createdAt)}</div></div><div class="history-status">Open</div></div>`;
+  });
+}
+
+function openChat(id){
+  currentChatId = id;
+  const chat = chatHistory.find(c => c.id === id);
+  if(!chat) return;
+  const messagesDiv = document.getElementById("chat-messages");
+  messagesDiv.innerHTML = "";
+  chat.messages.forEach(msg=>{
+    const div = document.createElement("div");
+    div.className = "message " + msg.role;
+    const content = document.createElement("div");
+    content.className = "message-content";
+    content.style.whiteSpace = "pre-line";
+    content.textContent = msg.text;
+    div.appendChild(content);
+    messagesDiv.appendChild(div);
+  });
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  showPage("ask");
+}
+
+function newChat(){
+  currentChatId = null;
+  renderNewChatWindow();
+}
+
+function createConversationForSource(sourceType, sourceId, sourceName){
+  const titlePrefix = sourceType === "mysql" ? "Database" : "Dataset";
+  currentChatId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const chat = {
+    id: currentChatId,
+    title: `${titlePrefix}: ${sourceName}`,
+    createdAt: new Date().toLocaleString(),
+    messages: [],
+    sourceType,
+    sourceId,
+    sourceName
+  };
+  chatHistory.unshift(chat);
+  saveChatHistory();
+  renderNewChatWindow();
+  return chat;
+}
+
+function getActiveConversation(){
+  return chatHistory.find(c => c.id === currentChatId) || null;
+}
+
+function sourceTypeFromFile(file){
+  return isSpreadsheetFile(file) ? "excel" : "csv";
+}
+
+function sourceLabel(sourceType){
+  const labels = { csv: "CSV", excel: "Excel", mysql: "MySQL" };
+  return labels[sourceType] || "Dataset";
+}
+
+function migrateChatHistory(history){
+  let changed = false;
+  const migrated = history.map(chat => {
+    if(chat.sourceType) return chat;
+    changed = true;
+    return { ...chat, sourceType: chat.fileId ? "csv" : null, sourceId: chat.fileId || null, sourceName: chat.fileName || "Dataset" };
+  });
+  if(changed) localStorage.setItem("chatHistory", JSON.stringify(migrated));
+  return migrated;
+}
+
+function saveChatHistory(){
+  localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+  renderHistory();
+}
+
+function renderNewChatWindow(){
+  const messagesDiv = document.getElementById("chat-messages");
+  messagesDiv.innerHTML = `<div class="message assistant"><div class="message-content">👋 Hi! I'm your Deploytual AI assistant. Ask me anything about your data.</div></div>`;
+}
+
+// ── ML FUNCTIONS ──
+async function detectAnomalies(){
+  const resultDiv = document.getElementById('anomaly-result');
+  if(!uploadedFileId){
+    resultDiv.innerHTML = '<p style="color:var(--danger)">⚠️ Please upload a dataset first.</p>';
+    return;
+  }
+  resultDiv.innerHTML = '<p>Running anomaly detection...</p>';
+  try{
+    const response = await fetch(`${API_BASE}/api/ml/anomalies`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ file_id: uploadedFileId })
+    });
+    if(!response.ok) throw new Error(await response.text());
+    const data = await response.json();
+    if(data.error){
+      resultDiv.innerHTML = `<p style="color:var(--danger)">${escapeHTML(data.error)}</p>`;
+      return;
+    }
+    resultDiv.innerHTML = `
+      <p>✅ <b>${data.anomalies_count}</b> anomalies detected out of <b>${data.total_rows}</b> rows.</p>
+      ${data.anomaly_sample && data.anomaly_sample.length ? `<div style="overflow-x:auto;margin-top:12px">${arrayToTable(data.anomaly_sample)}</div>` : ''}
+    `;
+  }catch(err){
+    console.error(err);
+    resultDiv.innerHTML = `<p style="color:var(--danger)">❌ Anomaly detection failed: ${escapeHTML(err.message)}</p>`;
+  }
+}
+
+async function generateForecast(){
+  const resultDiv = document.getElementById('forecast-result');
+  if(!uploadedFileId){
+    resultDiv.innerHTML = '<p style="color:var(--danger)">⚠️ Please upload a dataset first.</p>';
+    return;
+  }
+  const dateCol = document.getElementById('forecast-date-col').value;
+  const targetCol = document.getElementById('forecast-target-col').value;
+  const periods = parseInt(document.getElementById('forecast-periods').value) || 30;
+  if(!dateCol || !targetCol){
+    resultDiv.innerHTML = '<p style="color:var(--danger)">Please select both date and target columns.</p>';
+    return;
+  }
+  resultDiv.innerHTML = '<p>Generating forecast... (this may take a few seconds)</p>';
+  try{
+    const response = await fetch(`${API_BASE}/api/ml/forecast`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ file_id: uploadedFileId, date_col: dateCol, target_col: targetCol, periods: periods })
+    });
+    if(!response.ok) throw new Error(await response.text());
+    const data = await response.json();
+    let html = '';
+    if(data.forecast_plot){
+      html += `<img src="${escapeHTML(data.forecast_plot)}" style="max-width:100%;border:1px solid var(--line);border-radius:16px;margin-bottom:16px"/>`;
+    }
+    if(data.future_predictions && data.future_predictions.length){
+      html += `<div style="overflow-x:auto">${arrayToTable(data.future_predictions)}</div>`;
+    }
+    resultDiv.innerHTML = html || '<p>✅ Forecast generated, but no data to display.</p>';
+  }catch(err){
+    console.error(err);
+    resultDiv.innerHTML = `<p style="color:var(--danger)">❌ Forecast failed: ${escapeHTML(err.message)}</p>`;
+  }
+}
+
+function populateMLColumns(){
+  const dateSelect = document.getElementById('forecast-date-col');
+  const targetSelect = document.getElementById('forecast-target-col');
+  if(!dateSelect || !targetSelect) return;
+  dateSelect.innerHTML = '';
+  targetSelect.innerHTML = '';
+  if(uploadedColumns && uploadedColumns.length){
+    uploadedColumns.forEach(col => {
+      dateSelect.innerHTML += `<option value="${escapeHTML(col)}">${escapeHTML(col)}</option>`;
+      targetSelect.innerHTML += `<option value="${escapeHTML(col)}">${escapeHTML(col)}</option>`;
+    });
+  } else {
+    dateSelect.innerHTML = '<option value="">-- Upload a dataset first --</option>';
+    targetSelect.innerHTML = '<option value="">-- Upload a dataset first --</option>';
+  }
+}
+
+// ── REPORT ──
+function generateReport() {
+  if (!uploadedFileId) { alert("Please upload a dataset first."); return; }
+  const url = `${API_BASE}/api/report/generate?file_id=${encodeURIComponent(uploadedFileId)}&title=${encodeURIComponent(uploadedFileName || 'Dataset Analysis')}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Deploytual_Report_${uploadedFileId}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+// ── CLEANING ──
+async function scanDataQuality() {
+  const resultDiv = document.getElementById('clean-result');
+  if (!uploadedFileId) {
+    resultDiv.innerHTML = '<p style="color:var(--danger)">⚠️ Please upload a dataset first.</p>';
+    return;
+  }
+  resultDiv.innerHTML = '<p>Scanning for data quality issues...</p>';
+  try {
+    // Call the new cleaning endpoint (you'll need to add it to the backend)
+    const response = await fetch(`${API_BASE}/api/clean/suggest`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ file_id: uploadedFileId })
+    });
+    if (!response.ok) throw new Error(await response.text());
+    const data = await response.json();
+    if (!data.issues || data.issues.length === 0) {
+      resultDiv.innerHTML = '<p style="color:var(--mint);font-weight:600">✓ No data quality issues found.</p>';
+      return;
+    }
+    let html = '<div style="display:flex;flex-direction:column;gap:12px">';
+    data.issues.forEach((issue, idx) => {
+      html += `<div style="border:1px solid var(--line);border-radius:16px;padding:16px;background:var(--paper)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-family:'JetBrains Mono',monospace;background:var(--ink);color:var(--paper);padding:2px 10px;border-radius:100px;font-size:.75rem">${escapeHTML(issue.severity)}</span>
+          <span style="font-family:'Fraunces',serif;font-weight:500;font-size:1.1rem">${escapeHTML(issue.column || 'Dataset')}</span>
+        </div>
+        <p style="margin-top:8px;color:var(--muted);font-size:.9rem">${escapeHTML(issue.description)}</p>
+        <button class="file-btn" style="margin-top:10px" onclick="applyFix('${escapeInlineHandlerString(issue.column)}','${escapeInlineHandlerString(issue.type)}')">🪄 Fix it</button>
+      </div>`;
+    });
+    html += '</div>';
+    resultDiv.innerHTML = html;
+  } catch (err) {
+    console.error(err);
+    resultDiv.innerHTML = `<p style="color:var(--danger)">❌ Scan failed: ${escapeHTML(err.message)}</p>`;
+  }
+}
+
+async function applyFix(column, type) {
+  alert(`Applying ${type} fix on column "${column}"... (coming soon!)`);
+  // In a real implementation, you would call a POST endpoint like /api/clean/fix
+}
+
+// ── UTILITIES ──
+function escapeHTML(value){
+  return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+function escapeJSString(value){
+  return String(value ?? "").replaceAll("\\","\\\\").replaceAll("'","\\'").replaceAll("\n","\\n").replaceAll("\r","\\r");
+}
+
+function escapeInlineHandlerString(value){
+  return escapeHTML(escapeJSString(value));
+}
+
+function arrayToTable(arr){
+  if(!arr.length) return '';
+  const headers = Object.keys(arr[0]);
+  let html = '<table class="data-table"><thead><tr>';
+  headers.forEach(h => html += `<th>${escapeHTML(h)}</th>`);
+  html += '</tr></thead><tbody>';
+  arr.forEach(row => {
+    html += '<tr>';
+    headers.forEach(h => {
+      let val = row[h];
+      if(val == null) val = '';
+      else if(typeof val === 'number') val = val.toLocaleString();
+      html += `<td>${escapeHTML(val)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
+
+function renderChatCharts(charts){
+  const chartImages = charts.filter(chart => chart && chart.image_url);
+  if(chartImages.length === 0) return "";
+  return chartImages.map(chart => {
+    const imageUrl = chartImageUrl(chart.image_url);
+    return `<div style="margin-top:14px"><img src="${escapeHTML(imageUrl)}" alt="${escapeHTML(chart.title || 'Generated chart')}" style="max-width:100%;border:1px solid var(--line);border-radius:16px;background:var(--paper)"/></div>`;
+  }).join("");
+}
+
+function chartImageUrl(url){
+  if(!url) return "";
+  if(/^https?:\/\//i.test(url)) return url;
+  return `${API_BASE}${url.startsWith("/")?"":"/"}${url}`;
+}
+
+renderHistory();
+</script>
+</body>
+</html>
