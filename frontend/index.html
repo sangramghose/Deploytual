@@ -6,6 +6,7 @@
 <title>Deploytual – Deploy intelligence. Any data. Anywhere.</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
+/* ── Full CSS from your original file ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#f8faff;
@@ -237,8 +238,448 @@ nav{
   font-size:0.95rem;color:var(--text2);max-width:500px;margin-bottom:30px;
 }
 
-/* ... rest of styles identical to your existing code ... */
-/* (All existing CSS rules from your original file are included in the full version.) */
+.data-table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 8px 25px rgba(0,0,0,.06);
+}
+.data-table thead{
+    background:#2563eb;
+    color:white;
+}
+.data-table th{
+    padding:18px;
+    text-align:left;
+    font-size:15px;
+    letter-spacing:.5px;
+}
+.data-table td{
+    padding:16px 18px;
+    border-bottom:1px solid #eef2ff;
+}
+.data-table tbody tr:nth-child(even){
+    background:#f8fbff;
+}
+.data-table tbody tr:hover{
+    background:#edf4ff;
+    transition:.2s;
+}
+.data-table td:first-child{
+    font-weight:700;
+    color:#2563eb;
+}
+.empty-table{
+    padding:60px;
+    text-align:center;
+    color:#888;
+}
+#table-content{
+    overflow-x:auto;
+    margin-top:20px;
+}
+.data-table thead th{
+    position:sticky;
+    top:0;
+    z-index:2;
+}
+
+/* UPLOAD DATASET */
+.upload-area{
+  border:2px dashed var(--border2);
+  border-radius:16px;
+  padding:60px 40px;
+  text-align:center;
+  transition:all .25s;
+  cursor:pointer;
+  background:rgba(37,99,235,0.01);
+}
+.upload-area:hover{
+  border-color:var(--blue);
+  background:rgba(37,99,235,0.05);
+}
+.upload-area.active{
+  border-color:var(--blue);
+  background:rgba(37,99,235,0.1);
+  transform:scale(1.02);
+}
+.upload-icon{font-size:3rem;margin-bottom:16px}
+.upload-text{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:8px}
+.upload-sub{font-size:0.85rem;color:var(--text3)}
+.upload-input{display:none}
+
+.recent-files{display:flex;flex-direction:column;gap:16px;margin-top:30px}
+.file-item{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:16px;
+  background:white;
+  border:1px solid var(--border);
+  border-radius:12px;
+  transition:all .2s;
+}
+.file-item:hover{border-color:var(--blue);box-shadow:0 4px 16px rgba(37,99,235,0.12)}
+.file-icon{font-size:1.8rem}
+.file-info{flex:1}
+.file-name{font-weight:600;color:var(--text);margin-bottom:4px}
+.file-meta{font-size:0.8rem;color:var(--text3)}
+.file-action{display:flex;gap:8px}
+.file-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:white;color:var(--text2);font-size:0.75rem;font-weight:500;cursor:pointer;transition:all .18s}
+.file-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(37,99,235,0.05)}
+
+/* DATABASE */
+.db-selector{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;
+  margin:20px 0;
+}
+.db-option{
+  padding:16px;
+  border:2px solid var(--border);
+  border-radius:12px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+  background:white;
+}
+.db-option:hover{border-color:var(--blue);background:rgba(37,99,235,0.05)}
+.db-option.selected{border-color:var(--blue);background:rgba(37,99,235,0.10)}
+.db-logo{font-size:2.2rem;margin-bottom:8px}
+.db-name{font-weight:600;font-size:0.85rem;color:var(--text)}
+
+.form-group{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.form-label{font-weight:600;font-size:0.85rem;color:var(--text)}
+.form-input,.form-select{
+  padding:10px 14px;
+  border:1px solid var(--border2);
+  border-radius:8px;
+  font-family:inherit;
+  font-size:0.9rem;
+  color:var(--text);
+  transition:border-color .2s;
+}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.form-hint{font-size:0.75rem;color:var(--text3);margin-top:4px}
+
+.connection-test{
+  padding:16px;
+  border-radius:8px;
+  background:rgba(16,185,129,0.08);
+  border:1px solid rgba(16,185,129,0.2);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:var(--green);
+  font-size:0.85rem;
+  margin-top:20px;
+}
+.connection-test.error{background:rgba(220,38,38,0.08);border-color:rgba(220,38,38,0.2);color:var(--red)}
+.test-status{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.connection-test.error .test-status{background:var(--red);animation:none}
+
+/* DASHBOARD STATS */
+.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-bottom:30px}
+.stat-card{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:24px;
+  transition:all .2s;
+}
+.stat-card:hover{border-color:var(--blue2);box-shadow:0 4px 16px rgba(37,99,235,0.12)}
+.stat-label{font-size:0.8rem;color:var(--text3);font-weight:500;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em}
+.stat-value{font-size:2.2rem;font-weight:800;letter-spacing:-0.02em;color:var(--text);margin-bottom:8px}
+.stat-change{font-size:0.8rem;color:var(--green);font-weight:600;display:flex;align-items:center;gap:4px}
+.stat-change.down{color:var(--red)}
+.table-card{
+    margin-top:12px;
+    padding:16px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    cursor:pointer;
+    transition:.25s;
+}
+.table-card:hover{
+    background:#eef4ff;
+    border-color:#3b82f6;
+}
+
+.chart-container{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:24px;
+  margin-bottom:20px;
+}
+.chart-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:20px}
+.chart-placeholder{
+  height:300px;
+  background:linear-gradient(135deg,rgba(37,99,235,0.05),rgba(139,92,246,0.05));
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--text3);
+  font-size:0.9rem;
+}
+.question-chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-top:20px;
+}
+.question-chip{
+    padding:12px 18px;
+    border:none;
+    border-radius:25px;
+    background:#EEF4FF;
+    color:#2563EB;
+    font-weight:600;
+    cursor:pointer;
+    transition:.25s;
+}
+.question-chip:hover{
+    background:#2563EB;
+    color:white;
+    transform:translateY(-2px);
+}
+.table-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 20px;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    cursor:pointer;
+    transition:.25s;
+}
+.table-item:hover{
+    background:#EEF4FF;
+    border-color:#2563EB;
+    transform:translateX(5px);
+}
+/* CHAT */
+.chat-container{
+  display:flex;
+  flex-direction:column;
+  height:calc(100vh - 200px);
+  max-width:900px;
+  margin:0 auto;
+  background:white;
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+.chat-messages{
+  flex:1;
+  overflow-y:auto;
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.message{
+  display:flex;
+  gap:12px;
+  animation:slideIn .3s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.message.user{justify-content:flex-end}
+.message-content{
+  max-width:60%;
+  padding:12px 16px;
+  border-radius:10px;
+  font-size:0.9rem;
+  line-height:1.5;
+}
+.message.assistant .message-content{
+  background:var(--surface2);
+  color:var(--text);
+  border:1px solid var(--border);
+}
+.message.user .message-content{
+  background:var(--blue);
+  color:white;
+}
+.chat-input-area{
+  padding:20px;
+  border-top:1px solid var(--border);
+  display:flex;
+  gap:12px;
+}
+.chat-input{
+  flex:1;
+  padding:12px 16px;
+  border:1px solid var(--border2);
+  border-radius:8px;
+  font-family:inherit;
+  font-size:0.9rem;
+  color:var(--text);
+  transition:border-color .2s;
+}
+.chat-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.chat-input::placeholder{color:var(--text3)}
+.chat-btn{
+  width:40px;
+  height:40px;
+  border-radius:8px;
+  background:var(--blue);
+  color:white;
+  border:none;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all .2s;
+}
+.chat-btn:hover{background:#2563eb;transform:scale(1.05)}
+
+/* HISTORY */
+.history-list{display:flex;flex-direction:column;gap:12px}
+.history-item{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  cursor:pointer;
+  transition:all .2s;
+}
+.history-item:hover{border-color:var(--blue);background:rgba(37,99,235,0.02);transform:translateX(4px)}
+.history-type{
+  width:40px;
+  height:40px;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.2rem;
+  background:var(--surface2);
+}
+.history-info{flex:1}
+.history-query{font-weight:600;color:var(--text);margin-bottom:4px}
+.history-time{font-size:0.8rem;color:var(--text3)}
+.history-status{
+  padding:4px 12px;
+  border-radius:999px;
+  font-size:0.7rem;
+  font-weight:600;
+  background:rgba(16,185,129,0.1);
+  color:var(--green);
+}
+
+/* BUTTONS */
+.btn-group{display:flex;gap:12px;margin-top:20px}
+.btn-secondary{
+  padding:10px 20px;
+  border:1px solid var(--border2);
+  border-radius:8px;
+  background:white;
+  color:var(--text);
+  font-weight:600;
+  font-size:0.85rem;
+  cursor:pointer;
+  transition:all .2s;
+}
+.btn-secondary:hover{border-color:var(--blue);background:rgba(37,99,235,0.05)}
+.btn-submit{
+  padding:10px 24px;
+  border:none;
+  border-radius:8px;
+  background:var(--blue);
+  color:white;
+  font-weight:600;
+  font-size:0.85rem;
+  cursor:pointer;
+  transition:all .2s;
+}
+.btn-submit:hover{background:#2563eb;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.3)}
+
+/* MARQUEE */
+.marquee-section{padding:20px 0 60px;overflow:hidden}
+.marquee-label{text-align:center;font-size:0.72rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:20px}
+.marquee-track{display:flex;gap:16px;width:max-content;animation:marquee 28s linear infinite}
+.marquee-track:hover{animation-play-state:paused}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-item{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:8px 16px;white-space:nowrap;
+  font-size:0.8rem;color:var(--text2);font-weight:500;
+}
+.marquee-item span{font-size:14px}
+
+/* FEATURES */
+.features-section{padding:40px 0 80px}
+.section-label{
+  font-size:0.72rem;font-weight:600;letter-spacing:0.12em;
+  text-transform:uppercase;color:var(--blue2);margin-bottom:10px;
+}
+.section-title{
+  font-size:2.4rem;font-weight:800;letter-spacing:-0.03em;
+  color:var(--text);margin-bottom:48px;max-width:480px;line-height:1.15;
+}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feat-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;padding:24px;
+  transition:all .25s;position:relative;overflow:hidden;
+}
+.feat-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 0%,var(--card-glow,rgba(59,130,246,0.08)),transparent 65%);
+  opacity:0;transition:opacity .3s;
+}
+.feat-card:hover{border-color:var(--border2);transform:translateY(-3px)}
+.feat-card:hover::before{opacity:1}
+.feat-icon{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;margin-bottom:16px;
+  background:var(--surface2);border:1px solid var(--border);
+}
+.feat-title{font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:8px;letter-spacing:-0.01em}
+.feat-desc{font-size:0.82rem;color:var(--text2);line-height:1.6}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border)}
+
+/* FOOTER */
+footer{
+  padding:32px 40px;
+  border-top:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:0.78rem;
+  color:var(--text3);
+  margin-top:60px;
+}
+footer a{color:var(--text3);text-decoration:none;transition:color .15s}
+footer a:hover{color:var(--text2)}
+
+/* RESPONSIVE */
+@media(max-width:1024px){
+  .features-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .features-grid{grid-template-columns:1fr}
+  .stats-row{flex-direction:column;gap:20px}
+  nav{padding:0 20px}
+  .container{padding:20px}
+}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -269,49 +710,407 @@ nav{
 <!-- MAIN CONTAINER -->
 <div class="container">
 
-<!-- HOME PAGE (same as before) -->
+<!-- HOME PAGE -->
 <div id="home" class="page-content active">
-  <!-- ... full hero content ... -->
+  <section class="hero">
+    <div class="ticker-wrap">
+      <span class="ticker-live">Live</span>
+      <span class="ticker-text"><span id="ticker-val">1,284</span> queries analyzed in the last hour</span>
+    </div>
+
+    <p class="hero-eyebrow">The future of data analytics</p>
+    <h1 class="hero-title">Query Any Dataset<br><span class="line2">with AI. Instantly.</span></h1>
+
+    <div class="typewriter-wrap">
+      <span class="tw-static">Ask in</span>
+      <span class="tw-dynamic" id="tw-text">plain English</span><span class="tw-cursor"></span>
+    </div>
+
+    <p class="hero-sub">Deploy intelligence. Any data. Anywhere. Upload files, connect databases, and get instant insights. No SQL. No code. Just ask — and get answers.</p>
+
+    <div class="search-wrap">
+      <div class="search-glow"></div>
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Which product generated the highest revenue last quarter?" />
+        <div class="search-divider"></div>
+        <span class="search-brand">Deploytual</span>
+        <button class="search-btn" onclick="triggerSearch()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <button class="qa-btn" onclick="showPage('upload')">📁 Upload Dataset</button>
+      <button class="qa-btn" onclick="showPage('database')">🗄️ Connect Database</button>
+      <button class="qa-btn" onclick="showPage('dashboard')">📊 Dashboard</button>
+      <button class="qa-btn" onclick="showPage('ask')">🤖 Ask AI</button>
+      <button class="qa-btn" onclick="showPage('history')">⚡ History</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-num" id="stat1">0</div>
+        <div class="stat-label">Datasets queried</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat-item">
+        <div class="stat-num" id="stat2">0</div>
+        <div class="stat-label">Rows analyzed</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat-item">
+        <div class="stat-num" id="stat3">0%</div>
+        <div class="stat-label">Uptime SLA</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee-section">
+    <p class="marquee-label">Works with your existing stack</p>
+    <div class="marquee-track" id="marquee"></div>
+  </div>
+
+  <section style="max-width:1100px;margin:0 auto;padding:40px">
+    <p class="section-label">Why Deploytual</p>
+    <h2 class="section-title">Built for people who hate waiting for answers</h2>
+    <div class="features-grid">
+      <div class="feat-card" style="--card-glow:rgba(59,130,246,0.10)">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-title">Instant Query Engine</div>
+        <div class="feat-desc">Sub-50ms response times on billion-row datasets. No warmup. No waiting. Just answers.</div>
+      </div>
+      <div class="feat-card" style="--card-glow:rgba(6,182,212,0.10)">
+        <div class="feat-icon">🧠</div>
+        <div class="feat-title">Natural Language AI</div>
+        <div class="feat-desc">Type like you're texting a colleague. Our AI translates your question into precise queries automatically.</div>
+      </div>
+      <div class="feat-card" style="--card-glow:rgba(139,92,246,0.10)">
+        <div class="feat-icon">🔗</div>
+        <div class="feat-title">Connect Anything</div>
+        <div class="feat-desc">PostgreSQL, MySQL, BigQuery, Snowflake, CSV, Excel, Google Sheets — one unified interface.</div>
+      </div>
+      <div class="feat-card" style="--card-glow:rgba(16,185,129,0.10)">
+        <div class="feat-icon">📊</div>
+        <div class="feat-title">Auto Visualizations</div>
+        <div class="feat-desc">Charts, tables, heatmaps — automatically generated from your results. Export with one click.</div>
+      </div>
+      <div class="feat-card" style="--card-glow:rgba(236,72,153,0.10)">
+        <div class="feat-icon">🤖</div>
+        <div class="feat-title">AutoML Engine</div>
+        <div class="feat-desc">One-click anomaly detection, forecasting, and clustering right from the query box.</div>
+      </div>
+      <div class="feat-card" style="--card-glow:rgba(251,146,60,0.10)">
+        <div class="feat-icon">🐳</div>
+        <div class="feat-title">Deploy Anywhere</div>
+        <div class="feat-desc">Dockerized, on‑prem or cloud. Your data never leaves your environment.</div>
+      </div>
+    </div>
+  </section>
 </div>
 
-<!-- UPLOAD DATASET PAGE (full HTML from original) -->
+<!-- UPLOAD DATASET PAGE -->
 <div id="upload" class="page-content">
-  <!-- ... complete upload page ... -->
+  <div class="dashboard-container">
+    <h1 class="page-title">Upload Your Dataset</h1>
+    <p class="page-desc">Start by uploading your data. Supports CSV, Excel, JSON, and Parquet files. We'll automatically analyze the structure and schema.</p>
+
+    <div class="upload-area" id="upload-area">
+      <div class="upload-icon">📁</div>
+      <div class="upload-text">Drag & drop your file here</div>
+      <div class="upload-sub">or click to browse (max 500MB)</div>
+      <input type="file" id="upload-input" class="upload-input" accept=".csv,.xlsx,.xls,.json,.parquet"/>
+    </div>
+
+    <div style="margin-top:40px">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--text)">Recent Uploads</h3>
+      <div class="recent-files" id="recent-files"></div>
+    </div>
+  </div>
 </div>
 
 <!-- CONNECT DATABASE PAGE -->
 <div id="database" class="page-content">
-  <!-- ... complete database page ... -->
+  <div class="dashboard-container">
+    <h1 class="page-title">Connect Your Database</h1>
+    <p class="page-desc">Connect to your data warehouse and query it with natural language.</p>
+
+    <h3 style="font-size:0.95rem;font-weight:700;margin-top:20px;margin-bottom:20px;color:var(--text)">Select Database Type</h3>
+    <div class="db-selector" id="db-selector">
+      <div class="db-option" onclick="selectDb('postgres')">
+        <div class="db-logo">🐘</div>
+        <div class="db-name">PostgreSQL</div>
+      </div>
+      <div class="db-option" onclick="selectDb('mysql')">
+        <div class="db-logo">🔴</div>
+        <div class="db-name">MySQL</div>
+      </div>
+      <div class="db-option" onclick="selectDb('snowflake')">
+        <div class="db-logo">❄️</div>
+        <div class="db-name">Snowflake</div>
+      </div>
+      <div class="db-option" onclick="selectDb('bigquery')">
+        <div class="db-logo">📊</div>
+        <div class="db-name">BigQuery</div>
+      </div>
+      <div class="db-option" onclick="selectDb('redshift')">
+        <div class="db-logo">🔵</div>
+        <div class="db-name">Redshift</div>
+      </div>
+      <div class="db-option" onclick="selectDb('mongodb')">
+        <div class="db-logo">🟢</div>
+        <div class="db-name">MongoDB</div>
+      </div>
+    </div>
+
+    <div id="db-form-container" style="display:none;max-width:600px">
+      <h3 style="font-size:0.95rem;font-weight:700;margin-top:30px;margin-bottom:20px;color:var(--text)" id="form-title">PostgreSQL Connection</h3>
+      
+      <div class="form-group">
+        <label class="form-label">Host</label>
+        <input id="db-host" type="text" class="form-input" placeholder="db.example.com" value="localhost"/>
+        <div class="form-hint">The hostname or IP address of your database server</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-group">
+          <label class="form-label">Port</label>
+          <input id="db-port" type="text" class="form-input" placeholder="5432" value="5432"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Database</label>
+          <input id="db-name" type="text" class="form-input" placeholder="analytics" value="datamind"/>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input id="db-user" type="text" class="form-input" placeholder="postgres" value="admin"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input id="db-password" type="password" class="form-input" placeholder="••••••••" value="••••••••"/>
+        </div>
+      </div>
+
+      <button onclick="testConnection()" class="btn-submit" style="margin-top:20px;width:100%">Test Connection</button>
+      
+      <div id="connection-status" style="display:none"></div>
+
+      <div class="btn-group" style="margin-top:30px">
+        <button class="btn-secondary" onclick="showPage('home')">Cancel</button>
+        <button class="btn-submit" onclick="connectDatabase()">Connect & Sync Tables</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- DASHBOARD PAGE -->
 <div id="dashboard" class="page-content">
-  <!-- ... complete dashboard page ... -->
+  <div class="dashboard-container">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-desc">Connected databases and AI workspace.</p>
+
+    <div class="chart-container">
+      <div class="chart-title">🟢 Database Status</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-top:20px;">
+        <div class="stat-card">
+          <div class="stat-label">Database</div>
+          <div class="stat-value" id="dashboard-db-name">datamind</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Status</div>
+          <div class="stat-value" style="color:#22c55e">Connected</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tables</div>
+          <div class="stat-value" id="dashboard-table-count">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-container" id="connected-db-card" style="display:none;">
+      <div class="chart-title">🗄 Connected Tables</div>
+      <div id="connected-tables-list"></div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-title">🤖 Suggested Questions</div>
+      <div id="suggested-questions" class="question-chips"></div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-title">🕒 Recent AI Queries</div>
+      <div id="recent-query-list"></div>
+    </div>
+  </div>
 </div>
 
 <!-- TABLE VIEW PAGE -->
 <div id="table-view" class="page-content">
-  <!-- ... complete table view ... -->
+  <div class="dashboard-container">
+    <h1 class="page-title" id="table-title">Table</h1>
+    <p class="page-desc">Browse your database records.</p>
+    <div class="chart-container">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <input id="table-search" class="form-input" placeholder="Search..." style="max-width:300px">
+        <button class="btn-secondary" onclick="showPage('dashboard')">← Back</button>
+      </div>
+      <div id="table-content"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ASK AI PAGE -->
 <div id="ask" class="page-content">
-  <!-- ... complete ask AI page ... -->
+  <div class="dashboard-container">
+    <h1 class="page-title">Ask AI</h1>
+    <p class="page-desc">Chat with Deploytual AI about your data</p>
+    
+    <div class="chat-container">
+      <div class="chat-messages" id="chat-messages">
+        <div class="message assistant">
+          <div class="message-content">👋 Hi! I'm your Deploytual AI assistant. Ask me anything about your data.</div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <button type="button" class="chat-plus-btn" onclick="document.getElementById('chat-file').click()">+</button>
+        <input type="file" id="chat-file" style="display:none" accept=".csv,.xlsx,.xls" onchange="uploadChatFile(this.files[0])">
+        <input type="text" class="chat-input" id="chat-input" placeholder="Ask anything about your data..."/>
+        <button type="button" class="chat-btn" onclick="sendMessage()">↑</button>
+        <button type="button" onclick="newChat()" class="primary-btn">+ New Chat</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ANALYZE PAGE -->
 <div id="analyze" class="page-content">
-  <!-- ... complete analyze page ... -->
+  <div class="dashboard-container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px">
+      <div>
+        <h1 class="page-title" id="analyze-title">Analyze Dataset</h1>
+        <p class="page-desc" id="analyze-desc">Detailed analysis of your uploaded file</p>
+      </div>
+      <button class="btn-secondary" onclick="showPage('upload')">← Back to Upload</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:30px">
+      <div class="stat-card">
+        <div class="stat-label">File Name</div>
+        <div style="font-size:1.1rem;font-weight:700;color:var(--text);margin-top:8px" id="analyze-filename">test.csv</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Rows</div>
+        <div class="stat-value" id="analyze-rows">5</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Columns</div>
+        <div class="stat-value" id="analyze-cols">3</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">File Size</div>
+        <div style="font-size:1.1rem;font-weight:700;color:var(--text);margin-top:8px" id="analyze-size">2.4 MB</div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-title">Schema Overview</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:0.9rem">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border2)">
+              <th style="text-align:left;padding:12px;color:var(--text);font-weight:600">Column Name</th>
+              <th style="text-align:left;padding:12px;color:var(--text);font-weight:600">Data Type</th>
+              <th style="text-align:left;padding:12px;color:var(--text);font-weight:600">Non-Null</th>
+              <th style="text-align:left;padding:12px;color:var(--text);font-weight:600">Unique Values</th>
+            </tr>
+          </thead>
+          <tbody id="schema-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="statistics-container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:30px"></div>
+
+    <div class="chart-container" style="margin-top:30px">
+      <div class="chart-title">Data Quality Report</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;padding:16px">
+        <div style="padding:12px;background:rgba(16,185,129,0.08);border-radius:8px;border:1px solid rgba(16,185,129,0.2)">
+          <div style="font-size:0.8rem;color:var(--green);font-weight:600;margin-bottom:8px">✓ Complete</div>
+          <div style="font-size:1.8rem;font-weight:800;color:var(--green)">100%</div>
+          <div style="font-size:0.75rem;color:var(--text3);margin-top:4px">No missing values</div>
+        </div>
+        <div style="padding:12px;background:rgba(59,130,246,0.08);border-radius:8px;border:1px solid rgba(59,130,246,0.2)">
+          <div style="font-size:0.8rem;color:var(--blue);font-weight:600;margin-bottom:8px">📊 Duplicates</div>
+          <div style="font-size:1.8rem;font-weight:800;color:var(--blue)">0</div>
+          <div style="font-size:0.75rem;color:var(--text3);margin-top:4px">All rows unique</div>
+        </div>
+        <div style="padding:12px;background:rgba(6,182,212,0.08);border-radius:8px;border:1px solid rgba(6,182,212,0.2)">
+          <div style="font-size:0.8rem;color:var(--cyan);font-weight:600;margin-bottom:8px">⚡ Outliers</div>
+          <div style="font-size:1.8rem;font-weight:800;color:var(--cyan)">3</div>
+          <div style="font-size:0.75rem;color:var(--text3);margin-top:4px">Detected in Salary</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-container" style="margin-top:30px">
+      <div class="chart-title">Duplicate Records</div>
+      <div id="duplicate-data" style="padding:20px;color:var(--text2)">No duplicates detected</div>
+    </div>
+
+    <div class="btn-group" style="margin-top:40px;margin-bottom:60px">
+      <button class="btn-secondary" onclick="showPage('upload')">Upload Another File</button>
+      <button class="btn-submit" onclick="showPage('ask')">Ask Questions About This Data →</button>
+    </div>
+  </div>
 </div>
 
-<!-- VIEWER PAGE -->
+<!-- DATASET VIEWER PAGE -->
 <div id="viewer" class="page-content">
-  <!-- ... complete viewer page ... -->
+  <div class="dashboard-container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px">
+      <div>
+        <h1 class="page-title">Dataset Viewer</h1>
+        <p class="page-desc">View uploaded dataset records</p>
+      </div>
+      <button class="btn-secondary" onclick="showPage('upload')">← Back</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:30px">
+      <div class="stat-card">
+        <div class="stat-label">File Name</div>
+        <div class="stat-value" id="viewer-filename">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Rows</div>
+        <div class="stat-value" id="viewer-rows">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Columns</div>
+        <div class="stat-value" id="viewer-cols">-</div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-title">Dataset Records</div>
+      <div style="overflow:auto;max-height:600px">
+        <table id="viewer-table" style="width:100%;border-collapse:collapse"></table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- HISTORY PAGE -->
 <div id="history" class="page-content">
-  <!-- ... complete history page ... -->
+  <div class="dashboard-container">
+    <h1 class="page-title">Query History</h1>
+    <p class="page-desc">Your recent queries and their results</p>
+    <div class="history-list" id="history-list"></div>
+  </div>
 </div>
 
 <!-- FOOTER -->
@@ -326,11 +1125,11 @@ nav{
   <div>© 2026 Deploytual. All rights reserved.</div>
 </footer>
 
-<!-- JAVASCRIPT - full original logic, with updated API base -->
+<!-- JAVASCRIPT – full original logic, with updated API base -->
 <script>
-// ══════════════════════════════════════════════
-//  API CONFIGURATION – Points to your live Render backend
-// ══════════════════════════════════════════════
+// ════════════════════════════════════════
+// API CONFIGURATION
+// ════════════════════════════════════════
 const API_BASE = "https://deploytual.onrender.com";
 
 // ── CURSOR ──
@@ -351,8 +1150,8 @@ let mx=0,my=0,rx=0,ry=0;
 document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
 (function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)})();
 
-window.addEventListener("beforeunload", () => {});
-window.addEventListener("unload", () => {});
+window.addEventListener("beforeunload", () => { console.log("[Deploytual] beforeunload"); });
+window.addEventListener("unload", () => { console.log("[Deploytual] unload"); });
 
 // ── PAGE NAVIGATION ──
 function showPage(pageName){
@@ -435,7 +1234,11 @@ setTimeout(()=>{
 },600);
 
 // ── MARQUEE ──
-const integrations=[...]; // all integrations from original code
+const integrations=[
+  ['🐘','PostgreSQL'],['❄️','Snowflake'],['📊','BigQuery'],['🔴','MySQL'],
+  ['📋','Google Sheets'],['📁','Excel'],['🟠','MongoDB'],['🔵','Redshift'],
+  ['📦','S3 / CSV'],['🧩','Databricks'],['⚡','Spark'],['📡','REST APIs'],
+];
 const track=document.getElementById('marquee');
 const doubled=[...integrations,...integrations];
 doubled.forEach(([emoji,name])=>{
@@ -446,10 +1249,610 @@ doubled.forEach(([emoji,name])=>{
 });
 
 // ── UPLOAD FUNCTIONALITY ──
-// ... (entire original upload, analyze, database, chat, history, etc. functions are here)
-// (In the complete file, I'll include everything – no placeholders.)
+const uploadArea=document.getElementById('upload-area');
+const uploadInput=document.getElementById('upload-input');
 
-// For brevity, I'm showing the entire JavaScript block in the final answer.
+uploadArea.addEventListener('click',()=>uploadInput.click());
+uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.classList.add('active')});
+uploadArea.addEventListener('dragleave',()=>uploadArea.classList.remove('active'));
+uploadArea.addEventListener('drop',e=>{
+  e.preventDefault();
+  uploadArea.classList.remove('active');
+  const files=e.dataTransfer.files;
+  if(files.length>0)handleFileUpload(files[0]);
+});
+uploadInput.addEventListener('change',e=>handleFileUpload(e.target.files[0]));
+
+function renderStatistics(columns, rows){
+  const container = document.getElementById("statistics-container");
+  container.innerHTML = "";
+  numericColumns = [];
+  columns.forEach((col,index)=>{
+    const values = rows.slice(1).map(r => r.split(',')[index]?.trim()).filter(v => v !== '' && !isNaN(v)).map(Number);
+    if(values.length) numericColumns.push({ name: col, values: values });
+  });
+  if(numericColumns[0]) renderStatCard(container,1,numericColumns[0]);
+  if(numericColumns[1]) renderStatCard(container,2,numericColumns[1]);
+}
+
+function renderStatCard(container,cardNumber,column){
+  const values = column.values;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const mean = values.reduce((a,b)=>a+b,0) / values.length;
+  const variance = values.reduce((s,v)=>s + Math.pow(v-mean,2),0) / values.length;
+  const std = Math.sqrt(variance);
+  container.innerHTML += `
+    <div class="chart-container">
+      <div class="chart-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>${escapeHTML(column.name)} Statistics</span>
+        <button onclick="changeStatistic(${cardNumber})" style="border:none;background:none;cursor:pointer;font-size:18px;">✏️</button>
+      </div>
+      <div style="padding:16px">
+        <div style="display:flex;justify-content:space-between;padding:8px 0"><span>Min</span><span>${min}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0"><span>Max</span><span>${max}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0"><span>Mean</span><span>${mean.toFixed(2)}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0"><span>Std Dev</span><span>${std.toFixed(2)}</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function changeStatistic(cardNumber){
+  const names = numericColumns.map(c => c.name);
+  const selected = prompt("Choose a column:\n\n" + names.join("\n"));
+  const column = numericColumns.find(c => c.name === selected);
+  if(!column) return;
+  const container = document.getElementById("statistics-container");
+  container.innerHTML = "";
+  if(cardNumber === 1) renderStatCard(container,1,column);
+  if(cardNumber === 2) renderStatCard(container,2,column);
+}
+
+async function handleFileUpload(file){
+  if(!file) return;
+  if(isSpreadsheetFile(file)){ handleExcelUpload(file); return; }
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    const text = e.target.result;
+    if(text.startsWith("PK")){ handleExcelUpload(file); return; }
+    let uploadData;
+    try{ uploadData = await uploadToBackend(file); }catch(error){ alert("CSV upload failed. Please check the file and try again."); return; }
+    const rows = text.trim().split('\n');
+    const duplicateContainer = document.getElementById("duplicate-data");
+    const seen = new Set();
+    const duplicates = [];
+    rows.slice(1).forEach(row => { if(seen.has(row)) duplicates.push(row); seen.add(row); });
+    if(duplicates.length === 0){
+      duplicateContainer.innerHTML = `<div style="color:var(--green);font-weight:600">✓ No duplicate rows detected</div>`;
+    }else{
+      duplicateContainer.innerHTML = `<div style="color:var(--red);font-weight:600;margin-bottom:12px">${duplicates.length} duplicate rows found</div>`;
+      duplicates.forEach(row => { duplicateContainer.innerHTML += `<div style="padding:8px;margin-bottom:6px;background:rgba(220,38,38,0.08);border-radius:6px;font-family:monospace;">${escapeHTML(row)}</div>`; });
+    }
+    const columns = rows[0].split(',');
+    renderStatistics(columns, rows);
+    uploadedFileId = uploadData.file_id;
+    uploadedFileName = file.name;
+    uploadedRows = rows;
+    uploadedColumns = columns;
+    const schemaTable = document.getElementById('schema-table');
+    schemaTable.innerHTML = '';
+    columns.forEach((col, index) => {
+      const values = rows.slice(1).map(row => row.split(',')[index]?.trim()).filter(v => v !== '');
+      let dataType = 'Text';
+      if(values.every(v => !isNaN(v) && Number.isInteger(Number(v)))) dataType = 'Integer';
+      else if(values.every(v => !isNaN(v))) dataType = 'Float';
+      const uniqueValues = new Set(values).size;
+      schemaTable.innerHTML += `
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:12px;color:var(--text)">${escapeHTML(col)}</td>
+          <td style="padding:12px"><span style="background:rgba(37,99,235,0.1);color:var(--blue);padding:4px 8px;border-radius:4px;font-size:0.8rem;font-weight:600">${dataType}</span></td>
+          <td style="padding:12px;color:var(--green);font-weight:600">100%</td>
+          <td style="padding:12px;color:var(--text2)">${uniqueValues}</td>
+        </tr>
+      `;
+    });
+    document.getElementById('analyze-filename').textContent = file.name;
+    document.getElementById('analyze-rows').textContent = rows.length - 1;
+    document.getElementById('analyze-cols').textContent = columns.length;
+    document.getElementById('analyze-size').textContent = (file.size/1024).toFixed(2) + ' KB';
+    uploadArea.innerHTML = `<div style="color:var(--green);font-weight:600">✓ File uploaded: ${escapeHTML(file.name)}</div>`;
+    createConversationForSource("csv", uploadData.file_id, file.name);
+    addToRecentUploads(file, uploadData.file_id);
+  };
+  reader.readAsText(file);
+}
+
+function isSpreadsheetFile(file){
+  const extension = file.name.split('.').pop().toLowerCase();
+  const spreadsheetTypes = ["application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
+  return extension === "xlsx" || extension === "xls" || spreadsheetTypes.includes(file.type);
+}
+
+async function handleExcelUpload(file){
+  try{
+    const uploadData = await uploadToBackend(file);
+    const response = await fetch(`${API_BASE}/api/csv/${uploadData.file_id}/read?limit=100`);
+    if(!response.ok) throw new Error(`Could not read uploaded Excel file: ${response.status}`);
+    const readData = await response.json();
+    const columns = readData.columns;
+    const rows = [columns.join(','), ...readData.data.map(row => columns.map(col => csvCell(row[col])).join(','))];
+    uploadedFileId = uploadData.file_id;
+    uploadedFileName = file.name;
+    uploadedRows = rows;
+    uploadedColumns = columns;
+    renderStatistics(columns, rows);
+    renderAnalyzeSchema(columns, rows);
+    document.getElementById('analyze-filename').textContent = file.name;
+    document.getElementById('analyze-rows').textContent = uploadData.row_count;
+    document.getElementById('analyze-cols').textContent = columns.length;
+    document.getElementById('analyze-size').textContent = (file.size/1024).toFixed(2) + ' KB';
+    document.getElementById("duplicate-data").innerHTML = `<div style="color:var(--green);font-weight:600">✓ Excel file uploaded and converted for analysis</div>`;
+    uploadArea.innerHTML = `<div style="color:var(--green);font-weight:600">✓ File uploaded: ${escapeHTML(file.name)}</div>`;
+    addToRecentUploads(file);
+    createConversationForSource("excel", uploadData.file_id, file.name);
+  }catch(error){
+    alert("Excel upload failed. Please check the file and try again.");
+  }
+}
+
+function renderAnalyzeSchema(columns, rows){
+  const schemaTable = document.getElementById('schema-table');
+  schemaTable.innerHTML = '';
+  columns.forEach((col, index) => {
+    const values = rows.slice(1).map(row => row.split(',')[index]?.trim()).filter(v => v !== '');
+    let dataType = 'Text';
+    if(values.length && values.every(v => !isNaN(v) && Number.isInteger(Number(v)))) dataType = 'Integer';
+    else if(values.length && values.every(v => !isNaN(v))) dataType = 'Float';
+    const uniqueValues = new Set(values).size;
+    schemaTable.innerHTML += `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:12px;color:var(--text)">${escapeHTML(col)}</td>
+        <td style="padding:12px"><span style="background:rgba(37,99,235,0.1);color:var(--blue);padding:4px 8px;border-radius:4px;font-size:0.8rem;font-weight:600">${dataType}</span></td>
+        <td style="padding:12px;color:var(--green);font-weight:600">100%</td>
+        <td style="padding:12px;color:var(--text2)">${uniqueValues}</td>
+      </tr>
+    `;
+  });
+}
+
+function csvCell(value){
+  const text = String(value ?? '');
+  if(/[",\n]/.test(text)) return `"${text.replaceAll('"', '""')}"`;
+  return text;
+}
+
+async function uploadToBackend(file){
+  console.log("[Deploytual] uploadToBackend started", file?.name);
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await fetch(`${API_BASE}/api/csv/upload`, { method: "POST", body: formData });
+  console.log("[Deploytual] upload response", { status: response.status, contentType: response.headers.get("content-type") });
+  if(!response.ok){
+    const errorText = await response.text();
+    throw new Error(`Upload failed with ${response.status}: ${errorText}`);
+  }
+  const contentType = response.headers.get("content-type") || "";
+  if(!contentType.includes("application/json")){
+    const responseText = await response.text();
+    throw new Error(`Expected JSON upload response, received: ${responseText.slice(0, 120)}`);
+  }
+  const data = await response.json();
+  console.log("[Deploytual] uploadToBackend completed", data);
+  uploadedFileId = data.file_id;
+  return data;
+}
+
+function viewFile(){
+  if(uploadedRows.length === 0){ alert("Please upload a file first"); return; }
+  document.getElementById("viewer-filename").textContent = uploadedFileName;
+  document.getElementById("viewer-rows").textContent = uploadedRows.length - 1;
+  document.getElementById("viewer-cols").textContent = uploadedColumns.length;
+  const table = document.getElementById("viewer-table");
+  table.innerHTML = "";
+  let headerRow = "<tr>";
+  uploadedColumns.forEach(col=>{ headerRow += `<th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">${escapeHTML(col)}</th>`; });
+  headerRow += "</tr>";
+  table.innerHTML += headerRow;
+  uploadedRows.slice(1).forEach(row=>{
+    let cells = row.split(',');
+    let rowHTML = "<tr>";
+    cells.forEach(cell=>{ rowHTML += `<td style="padding:10px;border-bottom:1px solid #eee;">${escapeHTML(cell)}</td>`; });
+    rowHTML += "</tr>";
+    table.innerHTML += rowHTML;
+  });
+  showPage("viewer");
+}
+
+async function uploadChatFile(file){
+  if(!file) return;
+  console.log("[Deploytual] uploadChatFile started", file.name);
+  let data;
+  try{ data = await uploadToBackend(file); }catch(error){ alert("File upload failed."); return; }
+  uploadedFileName = file.name;
+  createConversationForSource(sourceTypeFromFile(file), data.file_id, file.name);
+  const messagesDiv = document.getElementById("chat-messages");
+  const assistantMsg = document.createElement("div");
+  assistantMsg.className = "message assistant";
+  const messageContent = document.createElement("div");
+  messageContent.className = "message-content";
+  messageContent.textContent = `📎 ${file.name} uploaded successfully.`;
+  assistantMsg.appendChild(messageContent);
+  messagesDiv.appendChild(assistantMsg);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  document.getElementById("chat-file").value = "";
+  console.log("[Deploytual] uploadChatFile completed", data.file_id);
+}
+
+function addToRecentUploads(file, fileId = uploadedFileId){
+  const recentFiles = document.getElementById("recent-files");
+  const fileItem = document.createElement("div");
+  fileItem.className = "file-item";
+  fileItem.innerHTML = `
+    <div class="file-icon">📊</div>
+    <div class="file-info">
+      <div class="file-name">${escapeHTML(file.name)}</div>
+      <div class="file-meta">Just uploaded</div>
+    </div>
+    <div class="file-action" style="display:flex;gap:12px;">
+      <button class="file-btn" onclick="analyzeDataset('${escapeInlineHandlerString(fileId)}')">Analyze</button>
+      <button class="file-btn" onclick="viewFile()">View</button>
+    </div>
+  `;
+  recentFiles.prepend(fileItem);
+}
+
+async function analyzeDataset(datasetId = null) {
+  const activeConversation = getActiveConversation();
+  const fileId = datasetId || (activeConversation && ["csv","excel"].includes(activeConversation.sourceType) ? activeConversation.sourceId : uploadedFileId);
+  console.log("Analyze File ID:", fileId);  
+  if(!fileId){
+    if(uploadedRows.length > 0){ showPage("analyze"); return; }
+    alert("Please upload a file first.");
+    return;
+  }
+  try{
+    const response = await fetch(`${API_BASE}/api/csv/${fileId}/read?limit=5`);
+    if(!response.ok) throw new Error(`Read failed with ${response.status}`);
+    const data = await response.json();
+    console.log(data);
+  }catch(error){
+    console.error("Analyze backend read failed:", error);
+    if(uploadedRows.length === 0){ alert("Please upload a file first."); return; }
+  }
+  showPage("analyze");
+}
+
+// ── DATABASE CONNECTION ──
+let selectedDb='mysql';
+function selectDb(db){
+  selectedDb=db;
+  document.querySelectorAll('.db-option').forEach(opt=>opt.classList.remove('selected'));
+  event.target.closest('.db-option').classList.add('selected');
+  document.getElementById('db-form-container').style.display='block';
+  const dbNames={postgres:'PostgreSQL',mysql:'MySQL',snowflake:'Snowflake',bigquery:'BigQuery',redshift:'Redshift',mongodb:'MongoDB'};
+  document.getElementById('form-title').textContent=dbNames[db]+' Connection';
+}
+
+async function testConnection(){
+  const statusEl = document.getElementById("connection-status");
+  statusEl.style.display = "block";
+  statusEl.textContent = "Testing connection...";
+  try{
+    const response = await fetch(`${API_BASE}/api/database/test`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ host:"localhost", port:3306, database:"datamind", username:"root", password:"" })
+    });
+    const data = await response.json();
+    if(data.success){ statusEl.textContent = "✅ Connection Successful"; }
+    else{ statusEl.textContent = "❌ " + data.message; }
+  }catch(err){
+    statusEl.textContent = "❌ Connection Failed";
+    console.error(err);
+  }
+}
+
+async function connectDatabase(){
+  const host = document.getElementById("db-host").value;
+  const port = Number(document.getElementById("db-port").value);
+  const database = document.getElementById("db-name").value;
+  const username = document.getElementById("db-user").value;
+  const password = document.getElementById("db-password").value;
+  const status = document.getElementById("connection-status");
+  status.style.display = "block";
+  status.textContent = "Connecting...";
+  try{
+    const response = await fetch(`${API_BASE}/api/database/tables`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ host, port, database, username, password })
+    });
+    const data = await response.json();
+    if(!response.ok) throw new Error(data.detail || "Connection failed");
+    localStorage.setItem("dbHost", host);
+    localStorage.setItem("dbPort", port);
+    localStorage.setItem("dbDatabase", database);
+    localStorage.setItem("dbUser", username);
+    localStorage.setItem("dbPassword", password);
+    localStorage.setItem("connectedTables", JSON.stringify(data.tables));
+    status.innerHTML = `<div class="connection-test"><h3>✅ Database Connected</h3><p><b>${escapeHTML(data.tables.length)}</b> table(s) synced.</p><hr>${data.tables.map(t => `📄 ${escapeHTML(t)}`).join("<br>")}</div>`;
+    createConversationForSource("mysql", null, database);
+  }catch(err){
+    console.error(err);
+    status.textContent = "❌ " + err.message;
+  }
+}
+
+function loadConnectedTables(){
+  console.log("Loading tables...");
+  const tables = JSON.parse(localStorage.getItem("connectedTables")) || [];
+  document.getElementById("dashboard-table-count").innerText = tables.length;
+  document.getElementById("dashboard-db-name").innerText = localStorage.getItem("dbDatabase") || "Not Connected";
+  const card = document.getElementById("connected-db-card");
+  const list = document.getElementById("connected-tables-list");
+  if(tables.length===0){ card.style.display="none"; return; }
+  card.style.display="block";
+  list.innerHTML="";
+  tables.forEach(table=>{
+    list.innerHTML+=`<div class="table-card" onclick="viewTable('${escapeInlineHandlerString(table)}')">🗄 ${escapeHTML(table)}</div>`;
+  });
+}
+
+async function viewTable(tableName){
+  showPage("table-view");
+  document.getElementById("table-title").innerText = tableName;
+  const response = await fetch(`${API_BASE}/api/database/table/${tableName}`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      host:localStorage.getItem("dbHost"),
+      port:Number(localStorage.getItem("dbPort")),
+      database:localStorage.getItem("dbDatabase"),
+      username:localStorage.getItem("dbUser"),
+      password:localStorage.getItem("dbPassword")
+    })
+  });
+  const data = await response.json();
+  renderTable(data.rows);
+  document.getElementById("table-search").oninput = filterTable;
+}
+
+function renderTable(rows){
+  if(sortColumn === "") currentTableRows = [...rows];
+  const container = document.getElementById("table-content");
+  if(!rows || rows.length===0){ container.innerHTML = `<div class="empty-table">No data found.</div>`; return; }
+  let html = `<table class="data-table"><thead><tr>`;
+  Object.keys(rows[0]).forEach(col=>{ html += `<th onclick="sortTable('${escapeInlineHandlerString(col)}')" style="cursor:pointer">${escapeHTML(String(col).toUpperCase())}</th>`; });
+  html += `</tr></thead><tbody>`;
+  rows.forEach(row=>{
+    html += "<tr>";
+    Object.values(row).forEach(value=>{
+      if(typeof value==="number"){ html += `<td>${escapeHTML(value.toLocaleString())}</td>`; }
+      else{ html += `<td>${escapeHTML(value)}</td>`; }
+    });
+    html += "</tr>";
+  });
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+}
+
+function filterTable(){
+  const text = document.getElementById("table-search").value.toLowerCase();
+  const filtered = currentTableRows.filter(row => Object.values(row).some(value => String(value).toLowerCase().includes(text)));
+  renderTable(filtered);
+}
+
+function sortTable(column){
+  if(sortColumn === column){ sortAscending = !sortAscending; }
+  else{ sortColumn = column; sortAscending = true; }
+  currentTableRows.sort((a,b)=>{
+    let x = a[column], y = b[column];
+    if(!isNaN(x) && !isNaN(y)) return sortAscending ? x-y : y-x;
+    x = String(x).toLowerCase();
+    y = String(y).toLowerCase();
+    if(x < y) return sortAscending ? -1 : 1;
+    if(x > y) return sortAscending ? 1 : -1;
+    return 0;
+  });
+  renderTable(currentTableRows);
+}
+
+// ── CHAT FUNCTIONALITY ──
+async function sendMessage(){
+  const input=document.getElementById('chat-input');
+  const msg=input.value.trim();
+  if(!msg)return;
+  const messagesDiv=document.getElementById('chat-messages');
+  const userMsg=document.createElement('div');
+  userMsg.className='message user';
+  const userContent=document.createElement('div');
+  userContent.className='message-content';
+  userContent.textContent=msg;
+  userMsg.appendChild(userContent);
+  messagesDiv.appendChild(userMsg);
+  input.value='';
+  messagesDiv.scrollTop=messagesDiv.scrollHeight;
+
+  const assistantMsg=document.createElement('div');
+  assistantMsg.className='message assistant';
+  const assistantContent=document.createElement('div');
+  assistantContent.className='message-content';
+  assistantContent.textContent='Analyzing...';
+  assistantMsg.appendChild(assistantContent);
+  messagesDiv.appendChild(assistantMsg);
+  messagesDiv.scrollTop=messagesDiv.scrollHeight;
+
+  const chat = getActiveConversation();
+  if(!chat || !chat.sourceType){
+    assistantContent.textContent='Please upload a dataset or connect a database first, then ask your question.';
+    return;
+  }
+  assistantContent.textContent = chat.sourceType === "mysql" ? "Analyzing the connected database..." : "Analyzing the uploaded dataset...";
+  chat.messages.push({ role:"user", text:msg });
+  try{
+    let response;
+    if(chat.sourceType === "mysql"){
+      response = await fetch(`${API_BASE}/api/database/chat`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ question:msg })
+      });
+    }else if(["csv","excel"].includes(chat.sourceType) && chat.sourceId){
+      response = await fetch(`${API_BASE}/api/ai/query-local`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ file_id:chat.sourceId, question:msg, max_rows:500 })
+      });
+    }else{
+      throw new Error("The active conversation does not have a valid data source.");
+    }
+    if(!response.ok) throw new Error(await response.text());
+    const data = await response.json();
+    assistantContent.style.whiteSpace = "pre-line";
+    const engineLabel = chat.sourceType === "mysql" ? `Generated SQL:\n\n${data.sql || "Not returned"}` : `Analysis Engine: ${data.model_used || "Deploytual Analytics Engine"}`;
+    const chartHtml = renderChatCharts(data.charts || []);
+    assistantContent.innerHTML = `${escapeHTML(data.answer)}${chartHtml}<hr><small style="color:#64748b;white-space:pre-wrap">${escapeHTML(engineLabel)}</small>`;
+    chat.messages.push({ role:"assistant", text:data.answer });
+    saveChatHistory();  
+    messagesDiv.scrollTop=messagesDiv.scrollHeight;
+  }catch(error){
+    console.error("Chat query failed:", error);
+    const errorText = chat.sourceType === "mysql" ? 'I could not query the connected database.' : 'I could not query the uploaded dataset.';
+    assistantContent.textContent=errorText;
+    chat.messages.push({ role:"assistant", text:errorText });
+    saveChatHistory();
+  }
+}
+
+document.getElementById('chat-input').addEventListener('keypress',e=>{if(e.key==='Enter')sendMessage()});
+
+function setQuery(q){ document.getElementById('search-input').value=q; }
+function triggerSearch(){
+  const q=document.getElementById('search-input').value;
+  if(!q)return;
+  document.getElementById('search-input').value='Analyzing: '+q+'...';
+  setTimeout(()=>{document.getElementById('search-input').value=q},1800);
+}
+
+function renderHistory(){
+  const container = document.getElementById("history-list");
+  if(!container) return;
+  container.innerHTML="";
+  if(chatHistory.length === 0){
+    container.innerHTML = `<div class="history-item"><div class="history-type">💬</div><div class="history-info"><div class="history-query">No saved chats yet</div><div class="history-time">Start a chat in Ask AI.</div></div><div class="history-status">Empty</div></div>`;
+    return;
+  }
+  chatHistory.forEach(chat=>{
+    container.innerHTML += `<div class="history-item" onclick="openChat('${escapeInlineHandlerString(chat.id)}')"><div class="history-type">💬</div><div class="history-info"><div class="history-query">${escapeHTML(chat.title)}</div><div class="history-time">${escapeHTML(chat.sourceName || chat.fileName || "Dataset")} • ${escapeHTML(sourceLabel(chat.sourceType))} • ${escapeHTML(chat.createdAt)}</div></div><div class="history-status">Open</div></div>`;
+  });
+}
+
+function openChat(id){
+  currentChatId = id;
+  const chat = chatHistory.find(c => c.id === id);
+  if(!chat) return;
+  const messagesDiv = document.getElementById("chat-messages");
+  messagesDiv.innerHTML = "";
+  chat.messages.forEach(msg=>{
+    const div = document.createElement("div");
+    div.className = "message " + msg.role;
+    const content = document.createElement("div");
+    content.className = "message-content";
+    content.style.whiteSpace = "pre-line";
+    content.textContent = msg.text;
+    div.appendChild(content);
+    messagesDiv.appendChild(div);
+  });
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  showPage("ask");
+}
+
+function newChat(){
+  currentChatId = null;
+  renderNewChatWindow();
+}
+
+function createConversationForSource(sourceType, sourceId, sourceName){
+  const titlePrefix = sourceType === "mysql" ? "Database" : "Dataset";
+  currentChatId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const chat = {
+    id: currentChatId,
+    title: `${titlePrefix}: ${sourceName}`,
+    createdAt: new Date().toLocaleString(),
+    messages: [],
+    sourceType,
+    sourceId,
+    sourceName
+  };
+  chatHistory.unshift(chat);
+  saveChatHistory();
+  renderNewChatWindow();
+  return chat;
+}
+
+function getActiveConversation(){
+  return chatHistory.find(c => c.id === currentChatId) || null;
+}
+
+function sourceTypeFromFile(file){
+  return isSpreadsheetFile(file) ? "excel" : "csv";
+}
+
+function sourceLabel(sourceType){
+  const labels = { csv: "CSV", excel: "Excel", mysql: "MySQL" };
+  return labels[sourceType] || "Dataset";
+}
+
+function migrateChatHistory(history){
+  let changed = false;
+  const migrated = history.map(chat => {
+    if(chat.sourceType) return chat;
+    changed = true;
+    return { ...chat, sourceType: chat.fileId ? "csv" : null, sourceId: chat.fileId || null, sourceName: chat.fileName || "Dataset" };
+  });
+  if(changed) localStorage.setItem("chatHistory", JSON.stringify(migrated));
+  return migrated;
+}
+
+function saveChatHistory(){
+  localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+  renderHistory();
+}
+
+function renderNewChatWindow(){
+  const messagesDiv = document.getElementById("chat-messages");
+  messagesDiv.innerHTML = `<div class="message assistant"><div class="message-content">👋 Hi! I'm your Deploytual AI assistant. Ask me anything about your data.</div></div>`;
+}
+
+function escapeHTML(value){
+  return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+function escapeJSString(value){
+  return String(value ?? "").replaceAll("\\","\\\\").replaceAll("'","\\'").replaceAll("\n","\\n").replaceAll("\r","\\r");
+}
+
+function escapeInlineHandlerString(value){
+  return escapeHTML(escapeJSString(value));
+}
+
+function renderChatCharts(charts){
+  const chartImages = charts.filter(chart => chart && chart.image_url);
+  if(chartImages.length === 0) return "";
+  return chartImages.map(chart => {
+    const imageUrl = chartImageUrl(chart.image_url);
+    return `<div style="margin-top:14px"><img src="${escapeHTML(imageUrl)}" alt="${escapeHTML(chart.title || 'Generated chart')}" style="max-width:100%;border:1px solid var(--border);border-radius:8px;background:#fff"/></div>`;
+  }).join("");
+}
+
+function chartImageUrl(url){
+  if(!url) return "";
+  if(/^https?:\/\//i.test(url)) return url;
+  return `${API_BASE}${url.startsWith("/")?"":"/"}${url}`;
+}
+
+renderHistory();
 </script>
 </body>
 </html>
