@@ -6,7 +6,6 @@
 <title>Deploytual – Deploy intelligence. Any data. Anywhere.</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-/* ── Full CSS from your original file ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#f8faff;
@@ -699,6 +698,7 @@ footer a:hover{color:var(--text2)}
     <li><button class="nav-tab" data-page="database" onclick="showPage('database')">Connect Database</button></li>
     <li><button class="nav-tab" data-page="dashboard" onclick="showPage('dashboard')">Dashboard</button></li>
     <li><button class="nav-tab" data-page="ask" onclick="showPage('ask')">Ask AI</button></li>
+    <li><button class="nav-tab" data-page="ml" onclick="showPage('ml')">🧬 AutoML</button></li>
     <li><button class="nav-tab" data-page="history" onclick="showPage('history')">History</button></li>
   </ul>
   <div class="nav-right">
@@ -1104,6 +1104,44 @@ footer a:hover{color:var(--text2)}
   </div>
 </div>
 
+<!-- ML PAGE -->
+<div id="ml" class="page-content">
+  <div class="dashboard-container">
+    <h1 class="page-title">🧬 Machine Learning</h1>
+    <p class="page-desc">Run anomaly detection and forecasting on your uploaded dataset.</p>
+
+    <div class="chart-container">
+      <div class="chart-title">🔍 Anomaly Detection</div>
+      <p style="font-size:0.85rem;color:var(--text2);margin-bottom:16px;">Detect outliers in your numeric data using Isolation Forest.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <button class="btn-submit" onclick="detectAnomalies()">Run Anomaly Detection</button>
+      </div>
+      <div id="anomaly-result" style="margin-top:20px;"></div>
+    </div>
+
+    <div class="chart-container" style="margin-top:30px">
+      <div class="chart-title">📈 Time‑Series Forecasting</div>
+      <p style="font-size:0.85rem;color:var(--text2);margin-bottom:16px;">Forecast a numeric column using Prophet (requires a date column).</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end">
+        <div class="form-group">
+          <label class="form-label">Date Column</label>
+          <select id="forecast-date-col" class="form-select"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Column</label>
+          <select id="forecast-target-col" class="form-select"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Periods</label>
+          <input id="forecast-periods" type="number" class="form-input" value="30" min="1" max="365"/>
+        </div>
+        <button class="btn-submit" onclick="generateForecast()">Generate Forecast</button>
+      </div>
+      <div id="forecast-result" style="margin-top:20px;"></div>
+    </div>
+  </div>
+</div>
+
 <!-- HISTORY PAGE -->
 <div id="history" class="page-content">
   <div class="dashboard-container">
@@ -1125,7 +1163,7 @@ footer a:hover{color:var(--text2)}
   <div>© 2026 Deploytual. All rights reserved.</div>
 </footer>
 
-<!-- JAVASCRIPT – full original logic, with updated API base -->
+<!-- JAVASCRIPT – full original logic, with updated API base and ML functions -->
 <script>
 // ════════════════════════════════════════
 // API CONFIGURATION
@@ -1153,7 +1191,7 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.le
 window.addEventListener("beforeunload", () => { console.log("[Deploytual] beforeunload"); });
 window.addEventListener("unload", () => { console.log("[Deploytual] unload"); });
 
-// ── PAGE NAVIGATION ──
+// ── PAGE NAVIGATION (overridden to include ML column populate) ──
 function showPage(pageName){
   document.querySelectorAll('.page-content').forEach(page=>page.classList.remove('active'));
   const page=document.getElementById(pageName);
@@ -1181,6 +1219,7 @@ function showPage(pageName){
   }
   if(pageName === "dashboard") loadConnectedTables();
   if(pageName === "history") renderHistory();
+  if(pageName === "ml") populateMLColumns();
   window.scrollTo(0,0);
 }
 
@@ -1825,6 +1864,116 @@ function renderNewChatWindow(){
   messagesDiv.innerHTML = `<div class="message assistant"><div class="message-content">👋 Hi! I'm your Deploytual AI assistant. Ask me anything about your data.</div></div>`;
 }
 
+// ── ML FUNCTIONS ──
+async function detectAnomalies(){
+  const resultDiv = document.getElementById('anomaly-result');
+  if(!uploadedFileId){
+    resultDiv.innerHTML = '<p style="color:var(--red)">⚠️ Please upload a dataset first.</p>';
+    return;
+  }
+  resultDiv.innerHTML = '<p>Running anomaly detection...</p>';
+  try{
+    const response = await fetch(`${API_BASE}/api/ml/anomalies`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ file_id: uploadedFileId })
+    });
+    if(!response.ok) throw new Error(await response.text());
+    const data = await response.json();
+
+    if(data.error){
+      resultDiv.innerHTML = `<p style="color:var(--red)">${escapeHTML(data.error)}</p>`;
+      return;
+    }
+    resultDiv.innerHTML = `
+      <p>✅ <b>${data.anomalies_count}</b> anomalies detected out of <b>${data.total_rows}</b> rows.</p>
+      ${data.anomaly_sample && data.anomaly_sample.length ? `<div style="overflow-x:auto;margin-top:12px">${arrayToTable(data.anomaly_sample)}</div>` : ''}
+    `;
+  }catch(err){
+    console.error(err);
+    resultDiv.innerHTML = `<p style="color:var(--red)">❌ Anomaly detection failed: ${escapeHTML(err.message)}</p>`;
+  }
+}
+
+async function generateForecast(){
+  const resultDiv = document.getElementById('forecast-result');
+  if(!uploadedFileId){
+    resultDiv.innerHTML = '<p style="color:var(--red)">⚠️ Please upload a dataset first.</p>';
+    return;
+  }
+  const dateCol = document.getElementById('forecast-date-col').value;
+  const targetCol = document.getElementById('forecast-target-col').value;
+  const periods = parseInt(document.getElementById('forecast-periods').value) || 30;
+
+  if(!dateCol || !targetCol){
+    resultDiv.innerHTML = '<p style="color:var(--red)">Please select both date and target columns.</p>';
+    return;
+  }
+  resultDiv.innerHTML = '<p>Generating forecast... (this may take a few seconds)</p>';
+  try{
+    const response = await fetch(`${API_BASE}/api/ml/forecast`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ file_id: uploadedFileId, date_col: dateCol, target_col: targetCol, periods: periods })
+    });
+    if(!response.ok) throw new Error(await response.text());
+    const data = await response.json();
+
+    let html = '';
+    if(data.forecast_plot){
+      html += `<img src="${escapeHTML(data.forecast_plot)}" style="max-width:100%;border:1px solid var(--border);border-radius:8px;margin-bottom:16px"/>`;
+    }
+    if(data.future_predictions && data.future_predictions.length){
+      html += `<div style="overflow-x:auto">${arrayToTable(data.future_predictions)}</div>`;
+    }
+    resultDiv.innerHTML = html || '<p>✅ Forecast generated, but no data to display.</p>';
+  }catch(err){
+    console.error(err);
+    resultDiv.innerHTML = `<p style="color:var(--red)">❌ Forecast failed: ${escapeHTML(err.message)}</p>`;
+  }
+}
+
+// Helper: convert array of objects to HTML table
+function arrayToTable(arr){
+  if(!arr.length) return '';
+  const headers = Object.keys(arr[0]);
+  let html = '<table class="data-table"><thead><tr>';
+  headers.forEach(h => html += `<th>${escapeHTML(h)}</th>`);
+  html += '</tr></thead><tbody>';
+  arr.forEach(row => {
+    html += '<tr>';
+    headers.forEach(h => {
+      let val = row[h];
+      if(val == null) val = '';
+      else if(typeof val === 'number') val = val.toLocaleString();
+      html += `<td>${escapeHTML(val)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
+
+// Populate forecast column selectors when dataset is available
+function populateMLColumns(){
+  const dateSelect = document.getElementById('forecast-date-col');
+  const targetSelect = document.getElementById('forecast-target-col');
+  if(!dateSelect || !targetSelect) return;
+  dateSelect.innerHTML = '';
+  targetSelect.innerHTML = '';
+
+  if(uploadedColumns && uploadedColumns.length){
+    uploadedColumns.forEach(col => {
+      dateSelect.innerHTML += `<option value="${escapeHTML(col)}">${escapeHTML(col)}</option>`;
+      targetSelect.innerHTML += `<option value="${escapeHTML(col)}">${escapeHTML(col)}</option>`;
+    });
+  } else {
+    dateSelect.innerHTML = '<option value="">-- Upload a dataset first --</option>';
+    targetSelect.innerHTML = '<option value="">-- Upload a dataset first --</option>';
+  }
+}
+
+// ── UTILS ──
 function escapeHTML(value){
   return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
 }
