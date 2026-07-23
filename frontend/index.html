@@ -1543,7 +1543,7 @@ function sortTable(column){
   renderTable(currentTableRows);
 }
 
-// ── CHAT ──
+// ── CHAT (UPDATED with Explainable AI) ──
 async function sendMessage(){
   const input=document.getElementById('chat-input');
   const msg=input.value.trim();
@@ -1597,7 +1597,35 @@ async function sendMessage(){
     assistantContent.style.whiteSpace = "pre-line";
     const engineLabel = chat.sourceType === "mysql" ? `Generated SQL:\n\n${data.sql || "Not returned"}` : `Analysis Engine: ${data.model_used || "Deploytual Analytics Engine"}`;
     const chartHtml = renderChatCharts(data.charts || []);
-    assistantContent.innerHTML = `${escapeHTML(data.answer)}${chartHtml}<hr><small style="color:var(--muted);white-space:pre-wrap">${escapeHTML(engineLabel)}</small>`;
+
+    // Build final HTML with Explainable AI
+    let assistantHTML = escapeHTML(data.answer) + (chartHtml || '');
+
+    // Show generated Pandas code (if present)
+    if (data.generated_code) {
+      assistantHTML += `
+        <details style="margin-top:12px">
+          <summary style="cursor:pointer; font-weight:500; color:var(--azure); user-select:none">
+            🔍 Show how this answer was computed
+          </summary>
+          <pre style="background:var(--ink); color:var(--paper); padding:12px; border-radius:8px; margin-top:8px; overflow-x:auto; font-family:'JetBrains Mono',monospace; font-size:.82rem; line-height:1.5; white-space:pre-wrap">${escapeHTML(data.generated_code)}</pre>
+        </details>`;
+    }
+
+    // Show generated SQL (for database answers)
+    if (data.sql) {
+      assistantHTML += `
+        <details style="margin-top:12px">
+          <summary style="cursor:pointer; font-weight:500; color:var(--mint); user-select:none">
+            📊 View generated SQL
+          </summary>
+          <pre style="background:var(--ink); color:var(--paper); padding:12px; border-radius:8px; margin-top:8px; overflow-x:auto; font-family:'JetBrains Mono',monospace; font-size:.82rem; line-height:1.5; white-space:pre-wrap">${escapeHTML(data.sql)}</pre>
+        </details>`;
+    }
+
+    assistantHTML += `<hr><small style="color:var(--muted);white-space:pre-wrap">${escapeHTML(engineLabel)}</small>`;
+    assistantContent.innerHTML = assistantHTML;
+
     chat.messages.push({ role:"assistant", text:data.answer });
     saveChatHistory();
     messagesDiv.scrollTop=messagesDiv.scrollHeight;
