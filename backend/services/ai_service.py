@@ -1,10 +1,7 @@
-import pandas as pd
-from services.csv_service import load_dataframe
-
 def answer_question_local(file_id: str, question: str) -> dict:
     """
     Local, deterministic Pandas analysis.
-    Returns dict with keys: answer, insights, suggested_followups.
+    Returns dict with keys: answer, insights, suggested_followups, generated_code.
     """
     df = load_dataframe(file_id)
     question_lower = question.lower()
@@ -13,6 +10,7 @@ def answer_question_local(file_id: str, question: str) -> dict:
     answer = "I couldn't find a specific answer. Try asking about the data directly."
     insights = []
     followups = []
+    generated_code = ""          # 👈 new
 
     # Determine column types
     numeric_cols = df.select_dtypes(include='number').columns.tolist()
@@ -26,6 +24,7 @@ def answer_question_local(file_id: str, question: str) -> dict:
             row = df[df[col] == max_val].iloc[0].to_dict()
             answer = f"The highest {col} is {max_val}, found in:\n{row}"
             insights = [{"type": "highlight", "content": f"Max {col}: {max_val}"}]
+            generated_code = f"# Find the maximum value in column '{col}'\nmax_val = df['{col}'].max()\nrow = df[df['{col}'] == max_val].iloc[0]"
         else:
             answer = "No numeric columns found to calculate highest value."
     
@@ -34,6 +33,7 @@ def answer_question_local(file_id: str, question: str) -> dict:
             col = numeric_cols[0]
             avg = df[col].mean()
             answer = f"The average {col} is {avg:.2f}"
+            generated_code = f"# Calculate the mean of column '{col}'\naverage = df['{col}'].mean()"
         else:
             answer = "No numeric columns for average calculation."
 
@@ -44,6 +44,7 @@ def answer_question_local(file_id: str, question: str) -> dict:
             answer = f"Counts for '{col}':\n" + "\n".join(f"{k}: {v}" for k,v in counts.items())
             insights = [{"type": "table", "content": counts}]
             followups.append(f"Show chart for {col} distribution")
+            generated_code = f"# Count values in column '{col}'\ncounts = df['{col}'].value_counts()"
         else:
             answer = "No categorical columns to group by."
 
@@ -51,6 +52,7 @@ def answer_question_local(file_id: str, question: str) -> dict:
         desc = df.describe(include='all').to_dict()
         answer = f"Here is the statistical summary:\n{desc}"
         insights = [{"type": "table", "content": desc}]
+        generated_code = "# Statistical summary of all columns\ndf.describe(include='all')"
 
     # Generic fallback: return column info and sample
     else:
@@ -58,6 +60,7 @@ def answer_question_local(file_id: str, question: str) -> dict:
         sample = df.head(3).to_dict(orient='records')
         answer = f"The dataset has {len(df)} rows and {len(columns_list)} columns: {columns_list}. Here are the first 3 rows:\n{sample}"
         insights = [{"type": "table", "content": sample}]
+        generated_code = "# Display the first 3 rows of the dataset\ndf.head(3)"
     
     # Always suggest some followups
     if not followups:
@@ -69,5 +72,6 @@ def answer_question_local(file_id: str, question: str) -> dict:
     return {
         "answer": str(answer),
         "insights": insights,
-        "suggested_followups": followups
+        "suggested_followups": followups,
+        "generated_code": generated_code      # 👈 new
     }
