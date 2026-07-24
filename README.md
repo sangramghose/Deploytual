@@ -1,4 +1,3 @@
-![Tests](https://github.com/sangramghose/Deploytual/actions/workflows/tests.yml/badge.svg)
 # 🧠 Deploytual
 
 ### Deploy intelligence. Any data. Anywhere.
@@ -288,3 +287,10 @@ MIT License © 2026 **Sangram Ghose**
 ## 🧠 Deploy intelligence. Any data. Anywhere.
 
 **Built for people who hate waiting for answers.**
+
+---
+
+**Developers:**  
+**- Sangram**
+**- Aditya**
+  
