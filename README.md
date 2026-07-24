@@ -2,11 +2,14 @@
 
 ### Deploy intelligence. Any data. Anywhere.
 
-> An AI-powered analytics platform that unifies data connectivity, natural language querying, and automated machine learning into a single, deployable engine-ready to be dropped into any environment.
+> An AI-powered analytics platform that unifies data connectivity, natural language querying, automated machine learning, and one-click reporting into a single, deployable engine—ready to be dropped into any environment.
+
+🌐 **Live Demo:** https://deploytual.netlify.app  
+📚 **API Docs:** https://deploytual.onrender.com/docs
 
 ---
 
-## ✨ Features
+# ✨ Features
 
 - 📂 **Multi-Source Ingestion**
   - CSV
@@ -15,56 +18,68 @@
   - MySQL
   - MongoDB
   - REST APIs
+  - Upload files or connect live databases.
 
 - 🗣️ **Natural Language Querying**
-  - Ask questions in plain English
-  - AI automatically converts queries into SQL or Pandas operations
+  - Ask questions in plain English.
+  - AI automatically converts them into SQL or Pandas operations.
 
 - 🤖 **AutoML Engine**
-  - One-click anomaly detection
-  - Time-series forecasting
-  - Cluster analysis
+  - Anomaly Detection (Isolation Forest)
+  - Time-Series Forecasting (Prophet)
+  - Cluster Analysis
+  - No coding required.
 
-- 🔍 **Instant Data Profiling**
-  - Automatic schema detection
-  - Missing value alerts
-  - Distribution summaries
-  - Data quality insights
+- 🔍 **AI Data Cleaning Studio**
+  - Detect missing values
+  - Find outliers
+  - Identify formatting issues
+  - AI-generated cleaning suggestions
+
+- 🧠 **Explainable AI**
+  - Every AI response includes the exact SQL or Pandas code used.
+
+- 🔊 **AI Storyteller**
+  - Read analysis aloud using text-to-speech.
+  - Speaking text glows during narration.
+
+- 📄 **Executive PDF Reports**
+  - One-click boardroom-ready PDF reports containing:
+    - Executive summary
+    - Statistics
+    - Forecast charts
+    - Anomaly detection
+    - Suggested next questions
 
 - 📊 **Smart Visualizations**
-  - Auto-generated charts
-  - Export charts as PNG
-  - Export processed datasets as CSV
+  - Automatic charts
+  - Exportable tables
+  - Shareable insights
 
-- 🔗 **Live Dashboards**
-  - Real-time analytics
-  - Shareable dashboard links
-  - Interactive visual reports
-
-- 🔒 **Enterprise Security**
+- 🔒 **Authentication**
+  - Email & Password
+  - Google OAuth 2.0
   - JWT Authentication
-  - Role-Based Access Control (RBAC)
-  - Query Audit Logs
-  - Multi-Tenant Architecture
 
 - 🐳 **Deploy Anywhere**
-  - Docker support
-  - Cloud deployment
-  - On-premise deployment
-  - Portable architecture
+  - Docker
+  - Render
+  - Netlify
+  - Runs on-premise or cloud
 
 ---
 
 # 🛠 Tech Stack
 
 | Layer | Technology |
-|-------|------------|
+|--------|------------|
 | **Backend** | Python, FastAPI, Pandas, NumPy |
-| **Machine Learning** | scikit-learn, Prophet |
-| **AI / NLQ** | OpenAI GPT, Prompt Engineering |
-| **Frontend** | React.js, Tailwind CSS, Chart.js |
-| **Databases** | PostgreSQL, MySQL, MongoDB, SQLite |
-| **Deployment** | Docker, Render, Vercel |
+| **Machine Learning** | Scikit-learn, Prophet |
+| **Frontend** | HTML5, CSS3, Vanilla JavaScript, Chart.js |
+| **Fonts** | Fraunces, Bricolage Grotesque, JetBrains Mono |
+| **Databases** | MySQL, PostgreSQL, MongoDB, SQLite |
+| **Authentication** | JWT, Google OAuth 2.0 |
+| **Deployment** | Docker, Render, Netlify |
 
 ---
 
@@ -73,74 +88,63 @@
 ## Prerequisites
 
 - Python 3.10+
-- Node.js 18+
-- Docker *(Optional)*
-- OpenAI API Key
+- Node.js *(optional)*
+- Docker *(optional)*
+- Google OAuth credentials *(optional for social login)*
 
 ---
 
-## 📦 Clone Repository
+## Backend Setup
 
 ```bash
 git clone https://github.com/sangramghose/Deploytual.git
-cd Deploytual
-```
 
----
-
-# Backend Setup
-
-```bash
-cd backend
+cd Deploytual/backend
 
 pip install -r requirements.txt
 
 cp .env.example .env
-```
 
-Edit the `.env` file and add:
+# Add GOOGLE_CLIENT_ID and SECRET_KEY
 
-```env
-OPENAI_API_KEY=your_api_key
-
-DATABASE_URL=your_database_url
-```
-
-Run the backend:
-
-```bash
 uvicorn main:app --reload
 ```
 
-Backend runs on:
+Backend runs at:
 
 ```
 http://localhost:8000
 ```
 
+Swagger Documentation:
+
+```
+http://localhost:8000/docs
+```
+
 ---
 
-# Frontend Setup
+## Frontend Setup
+
+The frontend is a single-page application.
+
+Simply open:
+
+```
+frontend/index.html
+```
+
+or serve it with:
 
 ```bash
-cd frontend
-
-npm install
-
-npm run dev
+npx serve frontend
 ```
 
-Frontend runs on:
-
-```
-http://localhost:5173
-```
+When deployed, Netlify automatically serves the frontend.
 
 ---
 
-# Docker Deployment
-
-Run the complete stack:
+## Docker
 
 ```bash
 docker-compose up --build
@@ -150,211 +154,136 @@ docker-compose up --build
 
 # 📡 API Overview
 
-Base URL
+**Base URL**
 
 ```
-/api
+https://deploytual.onrender.com/api
 ```
 
 | Method | Endpoint | Description |
 |---------|----------|-------------|
-| POST | `/upload` | Upload CSV or Excel datasets |
-| GET | `/datasets` | List all uploaded datasets |
-| GET | `/datasets/{id}/meta` | Data profiling & metadata |
-| POST | `/ai/query` | Ask questions in natural language |
+| POST | `/csv/upload` | Upload CSV or Excel |
+| GET | `/csv/{id}/read` | Read uploaded dataset |
+| GET | `/csv/{id}/meta` | Dataset profiling |
+| POST | `/ai/query-local` | Natural Language → Pandas |
+| POST | `/database/tables` | List database tables |
+| POST | `/database/table/{name}` | Read database table |
+| POST | `/database/chat` | AI SQL Chat |
 | POST | `/ml/anomalies` | Detect anomalies |
 | POST | `/ml/forecast` | Time-series forecasting |
-| POST | `/ml/train` | AutoML model training |
+| POST | `/clean/suggest` | AI data cleaning |
+| GET | `/report/generate` | Generate Executive PDF |
+| POST | `/auth/signup` | Register account |
+| POST | `/auth/login` | Login |
+| POST | `/auth/google` | Google OAuth Login |
 
-Interactive API Documentation:
+Interactive Swagger UI:
 
-```
-http://localhost:8000/docs
-```
-
----
-
-# 📊 Architecture
-
-```
-                +----------------------+
-                |   Data Sources       |
-                | CSV / SQL / MongoDB  |
-                +----------+-----------+
-                           |
-                           ▼
-                  Data Ingestion Layer
-                           |
-                           ▼
-                 Automatic Data Profiling
-                           |
-                           ▼
-          AI Natural Language Query Engine
-                           |
-             +-------------+-------------+
-             |                           |
-             ▼                           ▼
-      Machine Learning             Visualization
-      Forecasting                  Chart Generator
-      Clustering                   Dashboard
-      Anomaly Detection
-             |
-             ▼
-      REST API + Dashboard
-```
-
----
-
-# 🖼️ Screenshots
-
-> Replace these placeholder URLs with actual screenshots after deployment.
-
-| Upload & Profile | AI Query | Forecast Dashboard |
-|-----------------|----------|--------------------|
-| https://screenshots/upload.png | https://screenshots/query.png | https://screenshots/forecast.png |
+https://deploytual.onrender.com/docs
 
 ---
 
 # 🎯 Why Deploytual?
 
-Deploytual is built for:
+## 👨‍💻 Forward Deployed Engineers
 
-### 🧑‍💻 Forward Deployed Engineers (FDE)
-
-- Deploy directly on client infrastructure
-- Connect databases in minutes
-- Ask business questions immediately
-- No manual SQL required
+Deploy Deploytual directly on a client's infrastructure, connect existing databases, and immediately start answering business questions with explainable AI and professional reports.
 
 ---
 
-### 📈 Data Engineers
+## 📊 Data Engineers
 
 - Automated profiling
-- Data quality monitoring
-- AI-assisted analytics
+- AI-powered data cleaning
 - Machine learning pipelines
-- Forecasting with minimal configuration
+- Forecasting
+- Portable containerized deployment
 
 ---
 
-### 🏢 Organizations
+## 🏢 Organizations
 
 - Faster analytics
-- Better decision making
 - Reduced engineering effort
-- Portable deployment
-- AI-powered business intelligence
+- AI-powered Business Intelligence
+- Works anywhere
 
 ---
 
 # 📁 Project Structure
 
-```
+```text
 Deploytual/
-
+│
 ├── backend/
-│   ├── app/
-│   ├── models/
-│   ├── routers/
+│   ├── routes/
 │   ├── services/
-│   ├── utils/
+│   ├── config.py
 │   ├── main.py
-│   └── requirements.txt
+│   ├── schemas.py
+│   ├── requirements.txt
+│   └── uploads/
 │
 ├── frontend/
-│   ├── src/
-│   ├── public/
-│   ├── components/
-│   ├── pages/
-│   └── package.json
+│   └── index.html
 │
-├── docker-compose.yml
 ├── README.md
-└── LICENSE
+└── .gitignore
 ```
 
 ---
 
 # 🔮 Roadmap
 
-- [x] CSV Upload
-- [x] SQL Database Integration
-- [x] AI Natural Language Querying
-- [x] AutoML Forecasting
-- [x] Data Profiling
-- [ ] PDF Report Generator
-- [ ] Vector Search
-- [ ] RAG Integration
-- [ ] LLM Agent Workflows
-- [ ] Multi-user Workspace
-- [ ] Kubernetes Deployment
+### ✅ Completed
+
+- CSV & Excel Upload
+- AI Query Engine
+- Database Connectivity
+- AutoML
+- AI Data Cleaning Studio
+- Explainable AI
+- AI Storyteller
+- Executive PDF Reports
+- Email Authentication
+- Google OAuth
+
+### 🚧 Planned
+
+- PostgreSQL Connector
+- MongoDB Connector
+- Real-Time WebSocket Dashboards
+- Drag-and-Drop Pipeline Builder
+- Multi-User Workspace
+- RBAC
+- Kubernetes Deployment
 
 ---
 
 # 🤝 Contributing
 
-Contributions are welcome!
-
-1. Fork the repository
+Contributions are always welcome!
 
 ```bash
-git fork
-```
+# Fork the repository
 
-2. Create a feature branch
-
-```bash
 git checkout -b feature/amazing-feature
-```
 
-3. Commit your changes
-
-```bash
 git commit -m "Add amazing feature"
-```
 
-4. Push to GitHub
-
-```bash
 git push origin feature/amazing-feature
 ```
 
-5. Open a Pull Request
+Then open a Pull Request.
 
 ---
 
 # 📄 License
 
-This project is licensed under the **MIT License**.
-
-© **2026 Sangram Ghose**
+MIT License © 2026 **Sangram Ghose**
 
 ---
 
-# ⭐ Support
+## 🧠 Deploy intelligence. Any data. Anywhere.
 
-If you found this project useful:
-
-- ⭐ Star this repository
-- 🍴 Fork the project
-- 🐛 Report issues
-- 💡 Suggest new features
-
----
-
-# 📬 Contact
-
-**Developer:** Sangram Ghose
-
-GitHub: https://github.com/sangramghose
-
-Repository:
-
-https://github.com/sangramghose/Deploytual
-
----
-
-## 🚀 Deploy intelligence. Any data. Anywhere.
-
-**Build once. Deploy anywhere. Analyze everything.**
+**Built for people who hate waiting for answers.**
