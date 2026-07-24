@@ -1,3 +1,4 @@
+![Tests](https://github.com/sangramghose/Deploytual/actions/workflows/tests.yml/badge.svg)
 # 🧠 Deploytual
 
 ### Deploy intelligence. Any data. Anywhere.
