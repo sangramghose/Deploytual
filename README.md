@@ -291,6 +291,6 @@ MIT License © 2026 **Sangram Ghose**
 ---
 
 **Developers:**  
-**- Sangram**
-**- Aditya**
+- Sangram
+- Aditya
   
