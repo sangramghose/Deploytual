@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Deploytual - Deploy intelligence. Any data. Anywhere.</title>
+<title>Deploytual — Deploy intelligence. Any data. Anywhere.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -579,6 +579,7 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
     <li><button class="nav-tab" data-page="ask" onclick="showPage('ask')">Ask AI</button></li>
     <li><button class="nav-tab" data-page="ml" onclick="showPage('ml')">AutoML</button></li>
     <li><button class="nav-tab" data-page="clean" onclick="showPage('clean')">🧹 Clean</button></li>
+    <li><button class="nav-tab" data-page="pipeline" onclick="showPage('pipeline')">⚡ Pipeline</button></li>
     <li><button class="nav-tab" data-page="history" onclick="showPage('history')">History</button></li>
   </ul>
   <div class="nav-right">
@@ -1063,6 +1064,28 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
   </div>
 </div>
 
+<!-- ═════ PIPELINE ═════ -->
+<div id="pipeline" class="page-content">
+  <div class="dash">
+    <h1 class="page-title">⚡ <em>Data Pipeline</em> Builder.</h1>
+    <p class="page-desc">Type a natural language command and watch Deploytual chain the steps automatically.</p>
+
+    <div class="chart-container">
+      <div class="chart-title">🧠 Your command</div>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+        <input type="text" id="pipeline-instruction" class="form-input" placeholder="e.g., Clean the data, detect anomalies, and generate a PDF report" style="flex:1; min-width:250px"/>
+        <button class="btn-submit" onclick="executePipeline()">Execute Pipeline →</button>
+      </div>
+      <div id="pipeline-plan" style="margin-top:24px; display:flex; align-items:center; gap:8px; flex-wrap:wrap"></div>
+    </div>
+
+    <div class="chart-container" style="margin-top:24px">
+      <div class="chart-title">📊 Execution progress</div>
+      <div id="pipeline-results" style="display:flex; flex-direction:column; gap:12px"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ═════ HISTORY ═════ -->
 <div id="history" class="page-content">
   <div class="dash">
@@ -1135,7 +1158,7 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.le
 const upA=document.getElementById('upload-area');
 if(upA){upA.addEventListener('mousemove',e=>{const r=upA.getBoundingClientRect();upA.style.setProperty('--x',(e.clientX-r.left)+'px');upA.style.setProperty('--y',(e.clientY-r.top)+'px')})}
 
-// ── Page navigation (overridden later for auth) ──
+// ── Page navigation ──
 function showPage(pageName){
   document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));
   const page=document.getElementById(pageName);
@@ -1631,7 +1654,6 @@ async function sendMessage(){
     const engineLabel = chat.sourceType === "mysql" ? `Generated SQL:\n\n${data.sql || "Not returned"}` : `Analysis Engine: ${data.model_used || "Deploytual Analytics Engine"}`;
     const chartHtml = renderChatCharts(data.charts || []);
 
-    // Build final HTML with Explainable AI
     let assistantHTML = escapeHTML(data.answer) + (chartHtml || '');
 
     if (data.generated_code) {
@@ -1656,7 +1678,6 @@ async function sendMessage(){
     assistantHTML += `<hr><small style="color:var(--muted);white-space:pre-wrap">${escapeHTML(engineLabel)}</small>`;
     assistantContent.innerHTML = assistantHTML;
 
-    // ── AI Storyteller: add "Read Aloud" button ──
     const speakBtn = document.createElement('button');
     speakBtn.className = 'speak-btn';
     speakBtn.innerHTML = '🔊';
@@ -1682,7 +1703,7 @@ async function sendMessage(){
   }
 }
 
-// ── SPEECH FUNCTIONS (Storyteller) ──
+// ── SPEECH FUNCTIONS ──
 function startSpeaking(msgElement, text) {
   if (!text.trim()) return;
   document.querySelectorAll('.message-content.speaking').forEach(el => el.classList.remove('speaking'));
@@ -1705,12 +1726,8 @@ function startSpeaking(msgElement, text) {
 }
 
 function stopSpeaking() {
-  if (speechSynthesis.speaking) {
-    speechSynthesis.cancel();
-  }
-  if (currentSpeakingMsg) {
-    currentSpeakingMsg.classList.remove('speaking');
-  }
+  if (speechSynthesis.speaking) speechSynthesis.cancel();
+  if (currentSpeakingMsg) currentSpeakingMsg.classList.remove('speaking');
   currentUtterance = null;
   currentSpeakingMsg = null;
 }
@@ -1952,6 +1969,71 @@ async function scanDataQuality() {
 
 async function applyFix(column, type) {
   alert(`Applying ${type} fix on column "${column}"... (coming soon!)`);
+}
+
+// ── PIPELINE BUILDER ──
+async function executePipeline() {
+  const instruction = document.getElementById('pipeline-instruction').value.trim();
+  if (!instruction) { alert('Please type a command.'); return; }
+  if (!uploadedFileId) { alert('Please upload a dataset first.'); return; }
+
+  document.getElementById('pipeline-plan').innerHTML = '';
+  document.getElementById('pipeline-results').innerHTML = '<p>Parsing your command…</p>';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/pipeline/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_id: uploadedFileId, instruction })
+    });
+    if (!res.ok) throw new Error((await res.json()).detail || 'Pipeline execution failed');
+    const data = await res.json();
+
+    let planHTML = '';
+    data.steps.forEach((step, idx) => {
+      if (idx > 0) planHTML += `<span style="font-size:1.4rem; color:var(--muted)">→</span>`;
+      planHTML += `<div style="padding:10px 18px; border:1.5px solid var(--ink); border-radius:100px; font-weight:500; background:var(--paper); font-family:'Fraunces',serif; font-size:0.95rem">${escapeHTML(step)}</div>`;
+    });
+    document.getElementById('pipeline-plan').innerHTML = planHTML;
+
+    let resultsHTML = '';
+    data.results.forEach(result => {
+      const isSuccess = result.status === 'success';
+      const color = isSuccess ? 'var(--mint)' : 'var(--danger)';
+      resultsHTML += `
+        <div style="border:1px solid var(--line); border-radius:14px; padding:16px; background:var(--paper)">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px">
+            <span style="font-family:'JetBrains Mono',monospace; font-size:.75rem; background:${color}; color:#fff; padding:2px 10px; border-radius:100px">${isSuccess ? '✓' : '✗'}</span>
+            <span style="font-family:'Fraunces',serif; font-size:1.1rem; font-weight:500">${escapeHTML(result.step)}</span>
+          </div>
+          <div style="font-size:.85rem; color:var(--muted); line-height:1.5">${formatPipelineResult(result)}</div>
+        </div>`;
+    });
+    document.getElementById('pipeline-results').innerHTML = resultsHTML;
+
+    const lastResult = data.results[data.results.length - 1];
+    if (lastResult && lastResult.step.includes('Report') && lastResult.status === 'success') {
+      const downloadBtn = document.createElement('button');
+      downloadBtn.className = 'btn-submit';
+      downloadBtn.textContent = '📄 Download Report';
+      downloadBtn.onclick = () => generateReport();
+      document.getElementById('pipeline-results').appendChild(downloadBtn);
+    }
+  } catch (err) {
+    console.error(err);
+    document.getElementById('pipeline-results').innerHTML = `<p style="color:var(--danger)">❌ ${escapeHTML(err.message)}</p>`;
+  }
+}
+
+function formatPipelineResult(result) {
+  const data = result.data;
+  if (!data) return 'No details.';
+  if (data.issues_count !== undefined) return `Found ${data.issues_count} data quality issues.`;
+  if (data.anomalies_count !== undefined) return `Detected ${data.anomalies_count} anomalies out of ${data.total_rows} rows.`;
+  if (data.forecast_plot) return 'Forecast chart generated.';
+  if (data.report_ready) return 'PDF report ready. Click the button below to download.';
+  if (data.answer) return escapeHTML(data.answer);
+  return 'Step completed.';
 }
 
 // ── UTILITIES ──
