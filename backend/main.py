@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
-from routes import csv_routes, ai_routes, db_routes, ml_routes, report_routes, clean_routes, auth_routes
+from routes import csv_routes, ai_routes, db_routes, ml_routes, report_routes, clean_routes, auth_routes, pipeline_routes
 
 os.makedirs(settings.UPLOAD_FOLDER, exist_ok=True)
 
@@ -22,7 +22,8 @@ app.include_router(db_routes.router)
 app.include_router(ml_routes.router)
 app.include_router(report_routes.router)
 app.include_router(clean_routes.router)
-app.include_router(auth_routes.router)      # ✨ NEW
+app.include_router(auth_routes.router)
+app.include_router(pipeline_routes.router)    # 👈 Pipeline Builder
 
 @app.get("/")
 def read_root():
