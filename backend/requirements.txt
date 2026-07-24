@@ -15,3 +15,5 @@ passlib[bcrypt]
 google-auth
 requests
 email-validator
+pytest
+httpx
