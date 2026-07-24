@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Deploytual — Deploy intelligence. Any data. Anywhere.</title>
+<title>Deploytual - Deploy intelligence. Any data. Anywhere.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -476,6 +476,35 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
   footer{grid-template-columns:1fr;margin:60px 12px 12px;padding:28px}
 }
 @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* Storyteller – speaking glow */
+.message.assistant .message-content.speaking {
+  border-color: var(--coral);
+  box-shadow: 0 0 24px rgba(255,90,61,0.35), 0 0 8px rgba(255,90,61,0.5);
+  animation: speakingPulse 1.6s ease-in-out infinite;
+}
+@keyframes speakingPulse {
+  0%,100% { box-shadow: 0 0 24px rgba(255,90,61,0.35), 0 0 8px rgba(255,90,61,0.5); }
+  50%      { box-shadow: 0 0 36px rgba(255,90,61,0.55), 0 0 12px rgba(255,90,61,0.7); }
+}
+
+/* Speaker button */
+.speak-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.2s;
+  padding: 2px 6px;
+  margin-left: 6px;
+  border-radius: 6px;
+}
+.speak-btn:hover {
+  opacity: 1;
+  transform: scale(1.2);
+  background: var(--paper-2);
+}
 </style>
 </head>
 <body>
@@ -1092,6 +1121,10 @@ let sortColumn = "";
 let sortAscending = true;
 let chatHistory = migrateChatHistory(JSON.parse(localStorage.getItem("chatHistory")) || []);
 
+// Speech synthesis globals
+let currentUtterance = null;
+let currentSpeakingMsg = null;
+
 // Cursor
 const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
 let mx=0,my=0,rx=0,ry=0;
@@ -1543,7 +1576,7 @@ function sortTable(column){
   renderTable(currentTableRows);
 }
 
-// ── CHAT (UPDATED with Explainable AI) ──
+// ── CHAT (UPDATED with Explainable AI + Storyteller) ──
 async function sendMessage(){
   const input=document.getElementById('chat-input');
   const msg=input.value.trim();
@@ -1601,7 +1634,6 @@ async function sendMessage(){
     // Build final HTML with Explainable AI
     let assistantHTML = escapeHTML(data.answer) + (chartHtml || '');
 
-    // Show generated Pandas code (if present)
     if (data.generated_code) {
       assistantHTML += `
         <details style="margin-top:12px">
@@ -1611,8 +1643,6 @@ async function sendMessage(){
           <pre style="background:var(--ink); color:var(--paper); padding:12px; border-radius:8px; margin-top:8px; overflow-x:auto; font-family:'JetBrains Mono',monospace; font-size:.82rem; line-height:1.5; white-space:pre-wrap">${escapeHTML(data.generated_code)}</pre>
         </details>`;
     }
-
-    // Show generated SQL (for database answers)
     if (data.sql) {
       assistantHTML += `
         <details style="margin-top:12px">
@@ -1626,6 +1656,21 @@ async function sendMessage(){
     assistantHTML += `<hr><small style="color:var(--muted);white-space:pre-wrap">${escapeHTML(engineLabel)}</small>`;
     assistantContent.innerHTML = assistantHTML;
 
+    // ── AI Storyteller: add "Read Aloud" button ──
+    const speakBtn = document.createElement('button');
+    speakBtn.className = 'speak-btn';
+    speakBtn.innerHTML = '🔊';
+    speakBtn.title = 'Read answer aloud';
+    speakBtn.onclick = () => {
+      if (currentUtterance && currentUtterance._msgContent === assistantContent) {
+        stopSpeaking();
+        return;
+      }
+      stopSpeaking();
+      startSpeaking(assistantContent, assistantContent.textContent);
+    };
+    assistantMsg.appendChild(speakBtn);
+
     chat.messages.push({ role:"assistant", text:data.answer });
     saveChatHistory();
     messagesDiv.scrollTop=messagesDiv.scrollHeight;
@@ -1635,6 +1680,39 @@ async function sendMessage(){
     chat.messages.push({ role:"assistant", text:error.toString() });
     saveChatHistory();
   }
+}
+
+// ── SPEECH FUNCTIONS (Storyteller) ──
+function startSpeaking(msgElement, text) {
+  if (!text.trim()) return;
+  document.querySelectorAll('.message-content.speaking').forEach(el => el.classList.remove('speaking'));
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance._msgContent = msgElement;
+  msgElement.classList.add('speaking');
+  utterance.onend = () => {
+    msgElement.classList.remove('speaking');
+    currentUtterance = null;
+    currentSpeakingMsg = null;
+  };
+  utterance.onerror = () => {
+    msgElement.classList.remove('speaking');
+    currentUtterance = null;
+    currentSpeakingMsg = null;
+  };
+  speechSynthesis.speak(utterance);
+  currentUtterance = utterance;
+  currentSpeakingMsg = msgElement;
+}
+
+function stopSpeaking() {
+  if (speechSynthesis.speaking) {
+    speechSynthesis.cancel();
+  }
+  if (currentSpeakingMsg) {
+    currentSpeakingMsg.classList.remove('speaking');
+  }
+  currentUtterance = null;
+  currentSpeakingMsg = null;
 }
 
 document.getElementById('chat-input').addEventListener('keypress',e=>{if(e.key==='Enter')sendMessage()});
