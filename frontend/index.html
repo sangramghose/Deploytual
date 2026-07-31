@@ -506,7 +506,7 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
   background: var(--paper-2);
 }
 
-/* Toast notifications */
+/* Toast notifications for live WebSocket updates */
 .toast-container {
   position: fixed;
   top: 20px;
@@ -1286,6 +1286,9 @@ let currentSpeakingMsg = null;
 // WebSocket globals
 let ws;
 
+// Visual pipeline steps
+let visualPipelineSteps = [];
+
 // Cursor
 const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
 let mx=0,my=0,rx=0,ry=0;
@@ -1737,7 +1740,7 @@ function sortTable(column){
   renderTable(currentTableRows);
 }
 
-// ── CHAT (UPDATED with Explainable AI + Storyteller) ──
+// ── CHAT (Explainable AI + Storyteller) ──
 async function sendMessage(){
   const input=document.getElementById('chat-input');
   const msg=input.value.trim();
@@ -2175,8 +2178,6 @@ function formatPipelineResult(result) {
 }
 
 // ── PIPELINE BUILDER (Visual mode – Drag‑and‑Drop) ──
-let visualPipelineSteps = [];
-
 function switchPipelineTab(tab) {
   const textTab = document.getElementById('pipeline-tab-text');
   const visualTab = document.getElementById('pipeline-tab-visual');
@@ -2279,4 +2280,67 @@ async function runVisualPipeline() {
             <span style="font-family:'Fraunces',serif; font-size:1.1rem; font-weight:500">${escapeHTML(result.step)}</span>
           </div>
           <div style="font-size:.85rem; color:var(--muted); line-height:1.5">${formatPipelineResult(result)}</div>
-        </
+        </div>`;
+    });
+    resultsDiv.innerHTML = html;
+
+    const lastResult = data.results[data.results.length - 1];
+    if (lastResult && lastResult.step.includes('Report') && lastResult.status === 'success') {
+      const downloadBtn = document.createElement('button');
+      downloadBtn.className = 'btn-submit';
+      downloadBtn.textContent = '📄 Download Report';
+      downloadBtn.onclick = () => generateReport();
+      resultsDiv.appendChild(downloadBtn);
+    }
+  } catch (err) {
+    console.error(err);
+    resultsDiv.innerHTML = `<p style="color:var(--danger)">❌ ${escapeHTML(err.message)}</p>`;
+  }
+}
+
+// ── UTILITIES ──
+function escapeHTML(value){
+  return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+function escapeJSString(value){
+  return String(value ?? "").replaceAll("\\","\\\\").replaceAll("'","\\'").replaceAll("\n","\\n").replaceAll("\r","\\r");
+}
+
+function escapeInlineHandlerString(value){
+  return escapeHTML(escapeJSString(value));
+}
+
+function arrayToTable(arr){
+  if(!arr.length) return '';
+  const headers = Object.keys(arr[0]);
+  let html = '<table class="data-table"><thead><tr>';
+  headers.forEach(h => html += `<th>${escapeHTML(h)}</th>`);
+  html += '</tr></thead><tbody>';
+  arr.forEach(row => {
+    html += '<tr>';
+    headers.forEach(h => {
+      let val = row[h];
+      if(val == null) val = '';
+      else if(typeof val === 'number') val = val.toLocaleString();
+      html += `<td>${escapeHTML(val)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
+
+function renderChatCharts(charts){
+  const chartImages = charts.filter(chart => chart && chart.image_url);
+  if(chartImages.length === 0) return "";
+  return chartImages.map(chart => {
+    const imageUrl = chartImageUrl(chart.image_url);
+    return `<div style="margin-top:14px"><img src="${escapeHTML(imageUrl)}" alt="${escapeHTML(chart.title || 'Generated chart')}" style="max-width:100%;border:1px solid var(--line);border-radius:16px;background:var(--paper)"/></div>`;
+  }).join("");
+}
+
+function chartImageUrl(url){
+  if(!url) return "";
+  if(/^https?:\/\//i.test(url)) return url;
+  return `${API_BASE}${url
