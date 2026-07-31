@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from schemas import AnomalyRequest, ForecastRequest
 from services import ml_service
-from main import manager           # 👈 WebSocket manager
-import datetime                     # 👈 for timestamp
+from services.websocket_manager import manager   # 👈 fixed import
+import datetime
 
 router = APIRouter(prefix="/api/ml", tags=["ML"])
 
@@ -10,7 +10,6 @@ router = APIRouter(prefix="/api/ml", tags=["ML"])
 async def detect_anomalies(req: AnomalyRequest):
     try:
         result = ml_service.detect_anomalies(req.file_id, req.column)
-        # Broadcast to all connected clients
         await manager.broadcast({
             "event": "anomaly_detection_completed",
             "file_id": req.file_id,
@@ -30,7 +29,6 @@ async def forecast(req: ForecastRequest):
         result = ml_service.generate_forecast(
             req.file_id, req.date_col, req.target_col, req.periods
         )
-        # Broadcast forecast completion
         await manager.broadcast({
             "event": "forecast_completed",
             "file_id": req.file_id,
