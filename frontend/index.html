@@ -736,6 +736,43 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
   display: flex; align-items: center; justify-content: center;
 }
 .fab-item:hover { transform: scale(1.15); background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* Command Palette */
+#command-palette .palette-item {
+  padding: 10px 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.12s;
+  font-size: 0.92rem;
+  color: var(--ink);
+  user-select: none;
+}
+#command-palette .palette-item:hover,
+#command-palette .palette-item.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+#command-palette input.form-input {
+  color: var(--ink);
+  box-shadow: none !important;
+  transform: none !important;
+}
+#command-palette input.form-input:focus {
+  outline: none;
+  border: none;
+}
+.palette-item .shortcut {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: var(--paper-2);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
 </style>
 </head>
 <body>
@@ -858,7 +895,7 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
 
         <div class="search-wrap">
           <div class="search-bar">
-            <input type="text" id="search-input" placeholder="Which product generated the highest revenue last quarter?"/>
+            <input type="text" id="search-input" placeholder="Which product generated the highest revenue last quarter? (Ctrl+K for commands)"/>
             <span class="search-brand">Deploytual</span>
             <button class="search-btn" onclick="triggerSearch()" aria-label="search">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1380,6 +1417,21 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
     <button class="fab-item" onclick="showPage('ask')" title="Ask AI">🤖</button>
     <button class="fab-item" onclick="showPage('pipeline')" title="Pipeline builder">⚡</button>
     <button class="fab-item" onclick="generateReport()" title="Download PDF report">📄</button>
+  </div>
+</div>
+
+<!-- COMMAND PALETTE -->
+<div id="command-palette" style="display:none; position:fixed; inset:0; z-index:20000; background:rgba(24,20,16,0.6); backdrop-filter:blur(6px); align-items:flex-start; justify-content:center; padding-top:18vh">
+  <div style="background:var(--paper); border-radius:20px; width:560px; max-width:92vw; box-shadow:0 30px 80px rgba(0,0,0,0.4); overflow:hidden; animation:scaleIn .2s ease">
+    <div style="display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--line)">
+      <span style="font-size:1.2rem">⚡</span>
+      <input type="text" id="palette-input" class="form-input" placeholder="Type a command..." style="border:none; background:transparent; font-size:1rem; padding:0; flex:1" autofocus>
+      <kbd style="background:var(--paper-2); padding:4px 8px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--muted)">esc</kbd>
+    </div>
+    <div id="palette-results" style="max-height:360px; overflow-y:auto; padding:8px"></div>
+    <div style="padding:8px 16px; border-top:1px solid var(--line); font-size:0.72rem; color:var(--muted); font-family:'JetBrains Mono',monospace; display:flex; gap:20px">
+      <span>↑↓ Navigate</span><span>↵ Execute</span><span>esc Dismiss</span>
+    </div>
   </div>
 </div>
 
@@ -2742,6 +2794,165 @@ document.addEventListener('click', (e) => {
     document.getElementById('fab-actions').style.display = 'none';
   }
 });
+
+// ── COMMAND PALETTE ──
+const paletteCommands = [
+  { name: 'Upload Dataset', icon: '📁', action: () => showPage('upload'), keywords: ['upload', 'csv', 'excel', 'file'] },
+  { name: 'Connect Database', icon: '🗄️', action: () => showPage('database'), keywords: ['database', 'connect', 'sql', 'postgres', 'mysql'] },
+  { name: 'Dashboard', icon: '📊', action: () => showPage('dashboard'), keywords: ['dashboard', 'home', 'stats'] },
+  { name: 'Ask AI', icon: '🤖', action: () => showPage('ask'), keywords: ['ask', 'ai', 'chat', 'query', 'question'] },
+  { name: 'AutoML Engine', icon: '🧬', action: () => showPage('ml'), keywords: ['automl', 'ml', 'anomaly', 'forecast', 'machine'] },
+  { name: 'Data Cleaning Studio', icon: '🧹', action: () => showPage('clean'), keywords: ['clean', 'cleaning', 'quality', 'fix'] },
+  { name: 'Pipeline Builder', icon: '⚡', action: () => showPage('pipeline'), keywords: ['pipeline', 'etl', 'workflow', 'steps'] },
+  { name: 'Query History', icon: '⏱', action: () => showPage('history'), keywords: ['history', 'past', 'queries', 'chats'] },
+  { name: 'Go to Home', icon: '🏠', action: () => showPage('home'), keywords: ['home', 'landing', 'start'] },
+  { name: 'Generate PDF Report', icon: '📄', action: () => generateReport(), keywords: ['report', 'pdf', 'export', 'download'] },
+  { name: 'Run Anomaly Detection', icon: '🔍', action: () => { showPage('ml'); setTimeout(() => detectAnomalies(), 150); }, keywords: ['anomaly', 'outlier', 'detect'] },
+  { name: 'Toggle Dark Mode', icon: '🌓', action: () => {
+      const btn = document.getElementById('theme-toggle');
+      if (btn) btn.click();
+    }, keywords: ['dark', 'theme', 'light', 'mode', 'night'] },
+  { name: 'Sign In / Sign Up', icon: '🔒', action: () => openAuthModal('login'), keywords: ['login', 'signin', 'signup', 'auth', 'account'] },
+];
+
+const paletteOverlay = document.getElementById('command-palette');
+const paletteInput = document.getElementById('palette-input');
+const paletteResults = document.getElementById('palette-results');
+let paletteActiveIndex = 0;
+let filteredCommands = [];
+let paletteOpen = false;
+
+function openPalette() {
+  if (!paletteOverlay || !paletteInput) return;
+  paletteOpen = true;
+  paletteOverlay.style.display = 'flex';
+  paletteInput.value = '';
+  filterPalette('');
+  requestAnimationFrame(() => {
+    paletteInput.focus();
+    paletteInput.select();
+  });
+}
+
+function closePalette() {
+  if (!paletteOverlay) return;
+  paletteOpen = false;
+  paletteOverlay.style.display = 'none';
+  paletteActiveIndex = 0;
+}
+
+function filterPalette(query) {
+  const lower = (query || '').toLowerCase().trim();
+  filteredCommands = lower
+    ? paletteCommands.filter(cmd =>
+        cmd.name.toLowerCase().includes(lower) ||
+        cmd.keywords.some(k => k.includes(lower) || lower.includes(k))
+      )
+    : paletteCommands.slice();
+
+  paletteActiveIndex = 0;
+  renderPaletteResults();
+}
+
+function renderPaletteResults() {
+  if (!paletteResults) return;
+  if (filteredCommands.length === 0) {
+    paletteResults.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-style:italic;font-family:\'Fraunces\',serif">No matching commands</div>';
+    return;
+  }
+  paletteResults.innerHTML = filteredCommands.map((cmd, idx) =>
+    `<div class="palette-item${idx === paletteActiveIndex ? ' active' : ''}" data-index="${idx}">
+      <span style="font-size:1.15rem;width:28px;text-align:center;flex-shrink:0">${cmd.icon}</span>
+      <span style="flex:1">${escapeHTML(cmd.name)}</span>
+    </div>`
+  ).join('');
+}
+
+function updatePaletteActive() {
+  if (!paletteResults) return;
+  const items = paletteResults.querySelectorAll('.palette-item');
+  items.forEach((el, i) => {
+    el.classList.toggle('active', i === paletteActiveIndex);
+  });
+  const active = items[paletteActiveIndex];
+  if (active) active.scrollIntoView({ block: 'nearest' });
+}
+
+function executePaletteCommand(index) {
+  if (index >= 0 && index < filteredCommands.length) {
+    const cmd = filteredCommands[index];
+    closePalette();
+    setTimeout(() => {
+      try { cmd.action(); } catch (err) { console.error('Palette command failed:', err); }
+    }, 40);
+  } else {
+    closePalette();
+  }
+}
+
+// Global keyboard: Ctrl/Cmd+K toggles palette, Esc closes, arrows/enter navigate when open
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (paletteOpen) closePalette();
+    else openPalette();
+    return;
+  }
+  if (!paletteOpen) return;
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    closePalette();
+    return;
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    paletteActiveIndex = Math.min(paletteActiveIndex + 1, Math.max(filteredCommands.length - 1, 0));
+    updatePaletteActive();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    paletteActiveIndex = Math.max(paletteActiveIndex - 1, 0);
+    updatePaletteActive();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    executePaletteCommand(paletteActiveIndex);
+  }
+});
+
+if (paletteInput) {
+  paletteInput.addEventListener('input', () => filterPalette(paletteInput.value));
+  paletteInput.addEventListener('keydown', e => {
+    // Prevent input from swallowing arrow/enter — document handler owns them
+    if (['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key)) e.preventDefault();
+  });
+}
+
+if (paletteResults) {
+  paletteResults.addEventListener('mousedown', e => {
+    const item = e.target.closest('.palette-item');
+    if (!item) return;
+    e.preventDefault();
+    executePaletteCommand(parseInt(item.getAttribute('data-index'), 10));
+  });
+  paletteResults.addEventListener('mousemove', e => {
+    const item = e.target.closest('.palette-item');
+    if (!item) return;
+    const idx = parseInt(item.getAttribute('data-index'), 10);
+    if (!Number.isNaN(idx) && idx !== paletteActiveIndex) {
+      paletteActiveIndex = idx;
+      updatePaletteActive();
+    }
+  });
+}
+
+if (paletteOverlay) {
+  paletteOverlay.addEventListener('mousedown', e => {
+    if (e.target === paletteOverlay) {
+      e.preventDefault();
+      closePalette();
+    }
+  });
+}
 
 // Init Google Sign-In + bind buttons + WebSocket
 window.addEventListener('load', () => {
