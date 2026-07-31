@@ -1,0 +1,16 @@
+{
+  "name": "Deploytual — AI Analytics Platform",
+  "short_name": "Deploytual",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4efe6",
+  "theme_color": "#181410",
+  "description": "Deploy intelligence. Any data. Anywhere.",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>",
+      "sizes": "100x100",
+      "type": "image/svg+xml"
+    }
+  ]
+}
