@@ -17,3 +17,6 @@ requests
 email-validator
 pytest
 httpx
+langchain
+langgraph
+langchain-google-genai
