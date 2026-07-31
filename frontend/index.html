@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Deploytual — Deploy intelligence. Any data. Anywhere.</title>
+<title>Deploytual - Deploy intelligence. Any data. Anywhere.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -2343,4 +2343,207 @@ function renderChatCharts(charts){
 function chartImageUrl(url){
   if(!url) return "";
   if(/^https?:\/\//i.test(url)) return url;
-  return `${API_BASE}${url
+  return `${API_BASE}${url.startsWith("/")?"":"/"}${url}`;
+}
+
+// ── AUTH ──
+function openAuthModal(tab = 'login') {
+  document.getElementById('auth-modal').style.display = 'flex';
+  switchAuthTab(tab);
+}
+function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
+
+function switchAuthTab(tab) {
+  const loginTab = document.getElementById('tab-login');
+  const signupTab = document.getElementById('tab-signup');
+  const loginForm = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+  if (tab === 'login') {
+    loginTab.classList.add('active');
+    loginTab.style.background = 'var(--ink)';
+    loginTab.style.color = 'var(--paper)';
+    signupTab.classList.remove('active');
+    signupTab.style.background = 'transparent';
+    signupTab.style.color = 'var(--ink)';
+    loginForm.style.display = 'block';
+    signupForm.style.display = 'none';
+  } else {
+    signupTab.classList.add('active');
+    signupTab.style.background = 'var(--ink)';
+    signupTab.style.color = 'var(--paper)';
+    loginTab.classList.remove('active');
+    loginTab.style.background = 'transparent';
+    loginTab.style.color = 'var(--ink)';
+    loginForm.style.display = 'none';
+    signupForm.style.display = 'block';
+  }
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) throw new Error((await res.json()).detail || 'Login failed');
+    const data = await res.json();
+    storeSession(data);
+    closeAuthModal();
+  } catch (err) {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('login-error').textContent = err.message;
+  }
+}
+
+async function handleSignup(e) {
+  e.preventDefault();
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+    if (!res.ok) throw new Error((await res.json()).detail || 'Signup failed');
+    const data = await res.json();
+    storeSession(data);
+    closeAuthModal();
+  } catch (err) {
+    document.getElementById('signup-error').style.display = 'block';
+    document.getElementById('signup-error').textContent = err.message;
+  }
+}
+
+async function handleGoogleResponse(response) {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential })
+    });
+    if (!res.ok) throw new Error('Google login failed');
+    const data = await res.json();
+    storeSession(data);
+    closeAuthModal();
+  } catch (err) {
+    alert('Google sign‑in failed: ' + err.message);
+  }
+}
+
+function storeSession(data) {
+  localStorage.setItem('deploytual_token', data.access_token);
+  localStorage.setItem('deploytual_user', JSON.stringify(data.user));
+  updateAuthUI();
+}
+
+function logout() {
+  localStorage.removeItem('deploytual_token');
+  localStorage.removeItem('deploytual_user');
+  updateAuthUI();
+  showPage('home');
+}
+
+function updateAuthUI() {
+  const user = JSON.parse(localStorage.getItem('deploytual_user'));
+  const signInBtn = document.getElementById('nav-right-btn');
+  const ctaBtn = document.getElementById('nav-cta');
+  if (user) {
+    signInBtn.textContent = `👤 ${user.name}`;
+    signInBtn.onclick = () => { if (confirm('Logout?')) logout(); };
+    ctaBtn.style.display = 'none';
+  } else {
+    signInBtn.textContent = 'Sign in';
+    signInBtn.onclick = () => openAuthModal('login');
+    ctaBtn.style.display = 'inline-flex';
+  }
+}
+
+// ── WebSocket & Live Toasts ──
+function connectWebSocket() {
+  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  const wsUrl = `${protocol}://${API_BASE.replace(/^https?:\/\//, '')}/ws`;
+  ws = new WebSocket(wsUrl);
+
+  ws.onopen = () => {
+    console.log('[WS] Connected');
+    showToast('🔌 Live updates connected', 'info');
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      let msg = '';
+      if (data.event === 'pipeline_completed') {
+        msg = `⚡ Pipeline completed for ${data.file_id}`;
+      } else if (data.event === 'anomaly_detection_completed') {
+        msg = `🔍 Anomalies detected: ${data.anomalies_count} in ${data.file_id}`;
+      } else if (data.event === 'forecast_completed') {
+        msg = `📈 Forecast ready for ${data.file_id}`;
+      } else if (data.event === 'report_generated') {
+        msg = `📄 Report generated for ${data.file_id}`;
+      }
+      if (msg) showToast(msg, 'success');
+    } catch (e) {
+      console.error('WS message error', e);
+    }
+  };
+
+  ws.onclose = () => {
+    console.log('[WS] Disconnected – retrying in 5s');
+    setTimeout(connectWebSocket, 5000);
+  };
+
+  ws.onerror = (err) => {
+    console.error('[WS] Error', err);
+    ws.close();
+  };
+}
+
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 6000);
+}
+
+// Init Google Sign-In + bind buttons + WebSocket
+window.addEventListener('load', () => {
+  if (typeof google !== 'undefined' && google.accounts) {
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleResponse
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('google-signin-btn'),
+      { theme: 'outline', size: 'large', width: '100%' }
+    );
+  }
+  updateAuthUI();
+
+  document.getElementById('nav-right-btn').addEventListener('click', () => {
+    const user = JSON.parse(localStorage.getItem('deploytual_user'));
+    if (user) {
+      if (confirm('Logout?')) logout();
+    } else {
+      openAuthModal('login');
+    }
+  });
+  document.getElementById('nav-cta').addEventListener('click', () => openAuthModal('signup'));
+
+  // Start WebSocket connection
+  connectWebSocket();
+});
+
+renderHistory();
+</script>
+</body>
+</html>
