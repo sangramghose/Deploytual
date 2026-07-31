@@ -62,7 +62,7 @@ def get_agent():
     global _agent
     if _agent is None:
         llm = ChatGroq(
-            model="llama3-70b-8192",
+            model="llama-3.1-8b-instant",   # ✅ current free model on Groq
             temperature=0,
             api_key=os.getenv("GROQ_API_KEY")
         )
