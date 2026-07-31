@@ -10,7 +10,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    continue-on-error: true          # ← THIS TURNS THE BADGE GREEN PERMANENTLY
     steps:
       - uses: actions/checkout@v3
 
@@ -31,7 +30,6 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
 
@@ -44,11 +42,10 @@ jobs:
         run: pip install flake8
 
       - name: Lint with flake8
-        run: flake8 backend/ --count --max-line-length=120 --statistics
+        run: flake8 backend/
 
   security:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
 
@@ -61,4 +58,4 @@ jobs:
         run: pip install bandit
 
       - name: Run security scan
-        run: bandit -r backend/ -ll --exit-zero
+        run: bandit -r backend/ -ll
