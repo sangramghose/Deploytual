@@ -2,8 +2,8 @@
 
 ### Deploy intelligence. Any data. Anywhere.
 
-[![CI Pipeline](https://github.com/sangramghose/Deploytual/actions/workflows/ci.yml/badge.svg)](https://github.com/sangramghose/Deploytual/actions/workflows/ci.yml)
-[![Docker Image](https://github.com/sangramghose/Deploytual/actions/workflows/docker.yml/badge.svg)](https://github.com/sangramghose/Deploytual/actions/workflows/docker.yml)
+[![CI Pipeline](https://github.com/sangramghose/Deploytual/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/sangramghose/Deploytual/actions/workflows/ci.yml)
+[![Docker Image](https://github.com/sangramghose/Deploytual/actions/workflows/docker.yml/badge.svg?branch=main)](https://github.com/sangramghose/Deploytual/actions/workflows/docker.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://deploytual.netlify.app)
 
