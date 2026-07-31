@@ -1,0 +1,18 @@
+apiVersion: v2
+name: deploytual
+description: A Helm chart for Deploytual – AI-powered analytics platform
+type: application
+version: 2.0.0
+appVersion: "2.0.0"
+keywords:
+  - ai
+  - analytics
+  - fastapi
+  - machine-learning
+  - docker
+home: https://deploytual.netlify.app
+sources:
+  - https://github.com/sangramghose/Deploytual
+maintainers:
+  - name: Sangram Ghose
+    email: sangramkesharighose@gmail.com
