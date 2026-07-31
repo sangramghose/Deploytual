@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Deploytual - Deploy intelligence. Any data. Anywhere.</title>
+<title>Deploytual – AI Analytics | Pipeline Builder | AutoML</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -535,6 +535,7 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
 }
 .toast.success { border-left: 4px solid var(--mint); }
 .toast.info    { border-left: 4px solid var(--azure); }
+.toast.error   { border-left: 4px solid var(--danger); }
 @keyframes slideInToast {
   from { transform: translateX(100%); opacity: 0; }
   to   { transform: translateX(0); opacity: 1; }
@@ -917,14 +918,14 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
 
       <div class="hero-right">
         <div class="hero-badge">
-          <div class="stamp">◆ Featured</div>
-          <div class="stamp-title">No <span>SQL.</span><br>No code.</div>
-          <div class="stamp-sub">From CSV to production dashboard in under 30 seconds. Ask literally anything.</div>
+          <div class="stamp">◆ Now with</div>
+          <div class="stamp-title">⌘<span>Palette</span> + DnD</div>
+          <div class="stamp-sub">Press Ctrl+K to command anything. Build pipelines by dragging blocks. No SQL, no code, no limits.</div>
         </div>
         <div class="hero-badge alt">
-          <div class="stamp">▲ New</div>
-          <div class="stamp-title">AutoML <span>engine</span>.</div>
-          <div class="stamp-sub">One-click forecasts, anomaly detection & executive PDF reports.</div>
+          <div class="stamp">▲ AI‑Native</div>
+          <div class="stamp-title"><span>Explainable</span> AI. Real‑time.</div>
+          <div class="stamp-sub">See the code behind every answer. Live WebSocket toasts. Dark mode. One‑click PDFs. Deploy anywhere.</div>
         </div>
       </div>
     </div>
@@ -1095,7 +1096,10 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
 <!-- ═════ DASHBOARD ═════ -->
 <div id="dashboard" class="page-content">
   <div class="dash">
-    <h1 class="page-title">Command <em>center.</em></h1>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:10px">
+      <h1 class="page-title" style="margin-bottom:0">Command <em>center.</em></h1>
+      <button class="btn-secondary" onclick="copyShareLink()">🔗 Share Dashboard</button>
+    </div>
     <p class="page-desc">Connected databases and your AI workspace.</p>
 
     <div class="chart-container">
@@ -1417,6 +1421,7 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
     <button class="fab-item" onclick="showPage('ask')" title="Ask AI">🤖</button>
     <button class="fab-item" onclick="showPage('pipeline')" title="Pipeline builder">⚡</button>
     <button class="fab-item" onclick="generateReport()" title="Download PDF report">📄</button>
+    <button class="fab-item" onclick="copyShareLink()" title="Share dashboard link">🔗</button>
   </div>
 </div>
 
@@ -1460,7 +1465,7 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
   </div>
   <div class="foot-bottom">
     <span>© 2026 Deploytual. All rights reserved.</span>
-    <span>Made with ✦ for people who hate waiting.</span>
+    <span>Built for <strong>Forward Deployed</strong> engineers &amp; <strong>data</strong> teams. ✦</span>
   </div>
 </footer>
 
@@ -2277,6 +2282,12 @@ function generateReport() {
   a.remove();
 }
 
+function copyShareLink() {
+  navigator.clipboard.writeText(window.location.href)
+    .then(() => showToast('🔗 Dashboard link copied to clipboard!', 'success'))
+    .catch(() => showToast('Could not copy link. Please manually copy the URL.', 'error'));
+}
+
 // ── CLEANING ──
 async function scanDataQuality() {
   const resultDiv = document.getElementById('clean-result');
@@ -2558,6 +2569,9 @@ function chartImageUrl(url){
 function openAuthModal(tab = 'login') {
   document.getElementById('auth-modal').style.display = 'flex';
   switchAuthTab(tab);
+  // Clear previous errors
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('signup-error').style.display = 'none';
 }
 function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
 
@@ -2591,19 +2605,36 @@ async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+  const submitBtn = document.querySelector('#login-form .btn-submit');
+
+  if (!email || !password) {
+    errorEl.style.display = 'block';
+    errorEl.textContent = 'Please fill in both fields.';
+    return;
+  }
+
+  // Disable button & show loading
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Signing in…';
+  errorEl.style.display = 'none';
+
   try {
     const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    if (!res.ok) throw new Error((await res.json()).detail || 'Login failed');
     const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Login failed');
     storeSession(data);
     closeAuthModal();
   } catch (err) {
-    document.getElementById('login-error').style.display = 'block';
-    document.getElementById('login-error').textContent = err.message;
+    errorEl.style.display = 'block';
+    errorEl.textContent = err.message || 'Unable to connect. Please try again.';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Sign In →';
   }
 }
 
@@ -2612,19 +2643,35 @@ async function handleSignup(e) {
   const name = document.getElementById('signup-name').value.trim();
   const email = document.getElementById('signup-email').value.trim();
   const password = document.getElementById('signup-password').value;
+  const errorEl = document.getElementById('signup-error');
+  const submitBtn = document.querySelector('#signup-form .btn-submit');
+
+  if (!name || !email || password.length < 6) {
+    errorEl.style.display = 'block';
+    errorEl.textContent = 'Please fill all fields correctly (password ≥ 6 characters).';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Creating account…';
+  errorEl.style.display = 'none';
+
   try {
     const res = await fetch(`${API_BASE}/api/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password })
     });
-    if (!res.ok) throw new Error((await res.json()).detail || 'Signup failed');
     const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Signup failed');
     storeSession(data);
     closeAuthModal();
   } catch (err) {
-    document.getElementById('signup-error').style.display = 'block';
-    document.getElementById('signup-error').textContent = err.message;
+    errorEl.style.display = 'block';
+    errorEl.textContent = err.message || 'Unable to connect. Please try again.';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Create Account →';
   }
 }
 
@@ -2635,19 +2682,25 @@ async function handleGoogleResponse(response) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ credential: response.credential })
     });
-    if (!res.ok) throw new Error('Google login failed');
     const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Google login failed');
     storeSession(data);
     closeAuthModal();
   } catch (err) {
-    alert('Google sign‑in failed: ' + err.message);
+    showToast('Google sign‑in failed. Please try again.', 'error');
+    console.error(err);
   }
 }
 
 function storeSession(data) {
+  if (!data.access_token || !data.user) {
+    showToast('Invalid server response. Please try again.', 'error');
+    return;
+  }
   localStorage.setItem('deploytual_token', data.access_token);
   localStorage.setItem('deploytual_user', JSON.stringify(data.user));
   updateAuthUI();
+  showToast(`Welcome, ${data.user.name}!`, 'success');
 }
 
 function logout() {
@@ -2655,12 +2708,14 @@ function logout() {
   localStorage.removeItem('deploytual_user');
   updateAuthUI();
   showPage('home');
+  showToast('You have been logged out.', 'info');
 }
 
 function updateAuthUI() {
   const user = JSON.parse(localStorage.getItem('deploytual_user'));
   const signInBtn = document.getElementById('nav-right-btn');
   const ctaBtn = document.getElementById('nav-cta');
+
   if (user) {
     signInBtn.textContent = `👤 ${user.name}`;
     signInBtn.onclick = () => { if (confirm('Logout?')) logout(); };
@@ -2669,6 +2724,16 @@ function updateAuthUI() {
     signInBtn.textContent = 'Sign in';
     signInBtn.onclick = () => openAuthModal('login');
     ctaBtn.style.display = 'inline-flex';
+  }
+
+  // Also update the "Get started" button on the home page
+  if (document.getElementById('home').classList.contains('active')) {
+    if (user) {
+      ctaBtn.style.display = 'none';
+    } else {
+      ctaBtn.style.display = 'inline-flex';
+      ctaBtn.innerHTML = 'Get started <span class="arrow">↗</span>';
+    }
   }
 }
 
@@ -2807,6 +2872,7 @@ const paletteCommands = [
   { name: 'Query History', icon: '⏱', action: () => showPage('history'), keywords: ['history', 'past', 'queries', 'chats'] },
   { name: 'Go to Home', icon: '🏠', action: () => showPage('home'), keywords: ['home', 'landing', 'start'] },
   { name: 'Generate PDF Report', icon: '📄', action: () => generateReport(), keywords: ['report', 'pdf', 'export', 'download'] },
+  { name: 'Share Dashboard Link', icon: '🔗', action: () => copyShareLink(), keywords: ['share', 'link', 'clipboard', 'copy', 'url'] },
   { name: 'Run Anomaly Detection', icon: '🔍', action: () => { showPage('ml'); setTimeout(() => detectAnomalies(), 150); }, keywords: ['anomaly', 'outlier', 'detect'] },
   { name: 'Toggle Dark Mode', icon: '🌓', action: () => {
       const btn = document.getElementById('theme-toggle');
