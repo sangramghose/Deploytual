@@ -506,7 +506,7 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
   background: var(--paper-2);
 }
 
-/* Toast notifications for live WebSocket updates */
+/* Toast notifications */
 .toast-container {
   position: fixed;
   top: 20px;
@@ -532,6 +532,81 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
 @keyframes slideInToast {
   from { transform: translateX(100%); opacity: 0; }
   to   { transform: translateX(0); opacity: 1; }
+}
+
+/* Visual Pipeline Builder */
+.pipeline-toolbox {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.draggable-step {
+  padding: 10px 16px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 100px;
+  background: var(--paper);
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: grab;
+  transition: all 0.2s;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.draggable-step:hover {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  transform: translateY(-2px);
+}
+.pipeline-canvas {
+  border: 2px dashed var(--line-2);
+  border-radius: 24px;
+  padding: 20px;
+  min-height: 120px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  background: var(--paper);
+  transition: border-color 0.25s;
+}
+.pipeline-canvas.drag-over {
+  border-color: var(--coral);
+  background: rgba(255,90,61,0.05);
+}
+.pipeline-step-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 100px;
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  animation: popIn 0.3s ease;
+}
+.pipeline-step-chip .remove-step {
+  background: none;
+  border: none;
+  color: var(--muted-2);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  margin-left: 4px;
+  transition: color 0.2s;
+}
+.pipeline-step-chip .remove-step:hover {
+  color: var(--danger);
+}
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 </style>
 </head>
@@ -1092,24 +1167,53 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
   </div>
 </div>
 
-<!-- ═════ PIPELINE ═════ -->
+<!-- ═════ PIPELINE (with Drag‑and‑Drop) ═════ -->
 <div id="pipeline" class="page-content">
   <div class="dash">
     <h1 class="page-title">⚡ <em>Data Pipeline</em> Builder.</h1>
-    <p class="page-desc">Type a natural language command and watch Deploytual chain the steps automatically.</p>
+    <p class="page-desc">Build pipelines with natural language or drag‑and‑drop.</p>
 
-    <div class="chart-container">
-      <div class="chart-title">🧠 Your command</div>
-      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
-        <input type="text" id="pipeline-instruction" class="form-input" placeholder="e.g., Clean the data, detect anomalies, and generate a PDF report" style="flex:1; min-width:250px"/>
-        <button class="btn-submit" onclick="executePipeline()">Execute Pipeline →</button>
-      </div>
-      <div id="pipeline-plan" style="margin-top:24px; display:flex; align-items:center; gap:8px; flex-wrap:wrap"></div>
+    <!-- Tab bar -->
+    <div style="display:flex; gap:8px; margin-bottom:28px">
+      <button id="pipeline-tab-text" class="auth-tab active" onclick="switchPipelineTab('text')" style="flex:1; padding:10px; border:none; background:var(--ink); color:var(--paper); border-radius:100px; font-family:'Fraunces',serif; font-weight:500; cursor:pointer; transition:all .2s">📝 Text</button>
+      <button id="pipeline-tab-visual" class="auth-tab" onclick="switchPipelineTab('visual')" style="flex:1; padding:10px; border:none; background:transparent; color:var(--ink); border-radius:100px; font-family:'Fraunces',serif; font-weight:500; cursor:pointer; transition:all .2s">🧩 Visual</button>
     </div>
 
-    <div class="chart-container" style="margin-top:24px">
-      <div class="chart-title">📊 Execution progress</div>
-      <div id="pipeline-results" style="display:flex; flex-direction:column; gap:12px"></div>
+    <!-- Text mode (existing) -->
+    <div id="pipeline-text-mode">
+      <div class="chart-container">
+        <div class="chart-title">🧠 Your command</div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+          <input type="text" id="pipeline-instruction" class="form-input" placeholder="e.g., Clean the data, detect anomalies, and generate a PDF report" style="flex:1; min-width:250px"/>
+          <button class="btn-submit" onclick="executePipeline()">Execute Pipeline →</button>
+        </div>
+        <div id="pipeline-plan" style="margin-top:24px; display:flex; align-items:center; gap:8px; flex-wrap:wrap"></div>
+      </div>
+      <div class="chart-container" style="margin-top:24px">
+        <div class="chart-title">📊 Execution progress</div>
+        <div id="pipeline-results" style="display:flex; flex-direction:column; gap:12px"></div>
+      </div>
+    </div>
+
+    <!-- Visual mode (NEW) -->
+    <div id="pipeline-visual-mode" style="display:none">
+      <div class="chart-container">
+        <div class="chart-title">🧩 Drag steps into the pipeline</div>
+        <div class="pipeline-toolbox" id="pipeline-toolbox">
+          <div class="draggable-step" draggable="true" data-step="clean">🧹 Clean</div>
+          <div class="draggable-step" draggable="true" data-step="anomalies">🔍 Anomalies</div>
+          <div class="draggable-step" draggable="true" data-step="forecast">📈 Forecast</div>
+          <div class="draggable-step" draggable="true" data-step="report">📄 Report</div>
+        </div>
+        <div class="pipeline-canvas" id="pipeline-canvas">
+          <span style="color:var(--muted); font-style:italic">Drop steps here to build your pipeline</span>
+        </div>
+        <button class="btn-submit" onclick="runVisualPipeline()" style="margin-top:20px">▶ Run Pipeline</button>
+      </div>
+      <div class="chart-container" style="margin-top:24px">
+        <div class="chart-title">📊 Execution progress</div>
+        <div id="visual-pipeline-results" style="display:flex; flex-direction:column; gap:12px"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1125,7 +1229,7 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
 
 </div>
 
-<!-- Toast container for WebSocket notifications -->
+<!-- Toast container -->
 <div class="toast-container" id="toast-container"></div>
 
 <!-- FOOTER -->
@@ -2005,7 +2109,7 @@ async function applyFix(column, type) {
   alert(`Applying ${type} fix on column "${column}"... (coming soon!)`);
 }
 
-// ── PIPELINE BUILDER ──
+// ── PIPELINE BUILDER (Text mode) ──
 async function executePipeline() {
   const instruction = document.getElementById('pipeline-instruction').value.trim();
   if (!instruction) { alert('Please type a command.'); return; }
@@ -2070,252 +2174,109 @@ function formatPipelineResult(result) {
   return 'Step completed.';
 }
 
-// ── UTILITIES ──
-function escapeHTML(value){
-  return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-}
+// ── PIPELINE BUILDER (Visual mode – Drag‑and‑Drop) ──
+let visualPipelineSteps = [];
 
-function escapeJSString(value){
-  return String(value ?? "").replaceAll("\\","\\\\").replaceAll("'","\\'").replaceAll("\n","\\n").replaceAll("\r","\\r");
-}
+function switchPipelineTab(tab) {
+  const textTab = document.getElementById('pipeline-tab-text');
+  const visualTab = document.getElementById('pipeline-tab-visual');
+  const textMode = document.getElementById('pipeline-text-mode');
+  const visualMode = document.getElementById('pipeline-visual-mode');
 
-function escapeInlineHandlerString(value){
-  return escapeHTML(escapeJSString(value));
-}
-
-function arrayToTable(arr){
-  if(!arr.length) return '';
-  const headers = Object.keys(arr[0]);
-  let html = '<table class="data-table"><thead><tr>';
-  headers.forEach(h => html += `<th>${escapeHTML(h)}</th>`);
-  html += '</tr></thead><tbody>';
-  arr.forEach(row => {
-    html += '<tr>';
-    headers.forEach(h => {
-      let val = row[h];
-      if(val == null) val = '';
-      else if(typeof val === 'number') val = val.toLocaleString();
-      html += `<td>${escapeHTML(val)}</td>`;
-    });
-    html += '</tr>';
-  });
-  html += '</tbody></table>';
-  return html;
-}
-
-function renderChatCharts(charts){
-  const chartImages = charts.filter(chart => chart && chart.image_url);
-  if(chartImages.length === 0) return "";
-  return chartImages.map(chart => {
-    const imageUrl = chartImageUrl(chart.image_url);
-    return `<div style="margin-top:14px"><img src="${escapeHTML(imageUrl)}" alt="${escapeHTML(chart.title || 'Generated chart')}" style="max-width:100%;border:1px solid var(--line);border-radius:16px;background:var(--paper)"/></div>`;
-  }).join("");
-}
-
-function chartImageUrl(url){
-  if(!url) return "";
-  if(/^https?:\/\//i.test(url)) return url;
-  return `${API_BASE}${url.startsWith("/")?"":"/"}${url}`;
-}
-
-// ── AUTH ──
-function openAuthModal(tab = 'login') {
-  document.getElementById('auth-modal').style.display = 'flex';
-  switchAuthTab(tab);
-}
-function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
-
-function switchAuthTab(tab) {
-  const loginTab = document.getElementById('tab-login');
-  const signupTab = document.getElementById('tab-signup');
-  const loginForm = document.getElementById('login-form');
-  const signupForm = document.getElementById('signup-form');
-  if (tab === 'login') {
-    loginTab.classList.add('active');
-    loginTab.style.background = 'var(--ink)';
-    loginTab.style.color = 'var(--paper)';
-    signupTab.classList.remove('active');
-    signupTab.style.background = 'transparent';
-    signupTab.style.color = 'var(--ink)';
-    loginForm.style.display = 'block';
-    signupForm.style.display = 'none';
+  if (tab === 'text') {
+    textTab.classList.add('active');
+    textTab.style.background = 'var(--ink)';
+    textTab.style.color = 'var(--paper)';
+    visualTab.classList.remove('active');
+    visualTab.style.background = 'transparent';
+    visualTab.style.color = 'var(--ink)';
+    textMode.style.display = 'block';
+    visualMode.style.display = 'none';
   } else {
-    signupTab.classList.add('active');
-    signupTab.style.background = 'var(--ink)';
-    signupTab.style.color = 'var(--paper)';
-    loginTab.classList.remove('active');
-    loginTab.style.background = 'transparent';
-    loginTab.style.color = 'var(--ink)';
-    loginForm.style.display = 'none';
-    signupForm.style.display = 'block';
+    visualTab.classList.add('active');
+    visualTab.style.background = 'var(--ink)';
+    visualTab.style.color = 'var(--paper)';
+    textTab.classList.remove('active');
+    textTab.style.background = 'transparent';
+    textTab.style.color = 'var(--ink)';
+    textMode.style.display = 'none';
+    visualMode.style.display = 'block';
   }
 }
 
-async function handleLogin(e) {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  try {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    if (!res.ok) throw new Error((await res.json()).detail || 'Login failed');
-    const data = await res.json();
-    storeSession(data);
-    closeAuthModal();
-  } catch (err) {
-    document.getElementById('login-error').style.display = 'block';
-    document.getElementById('login-error').textContent = err.message;
-  }
-}
-
-async function handleSignup(e) {
-  e.preventDefault();
-  const name = document.getElementById('signup-name').value.trim();
-  const email = document.getElementById('signup-email').value.trim();
-  const password = document.getElementById('signup-password').value;
-  try {
-    const res = await fetch(`${API_BASE}/api/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password })
-    });
-    if (!res.ok) throw new Error((await res.json()).detail || 'Signup failed');
-    const data = await res.json();
-    storeSession(data);
-    closeAuthModal();
-  } catch (err) {
-    document.getElementById('signup-error').style.display = 'block';
-    document.getElementById('signup-error').textContent = err.message;
-  }
-}
-
-async function handleGoogleResponse(response) {
-  try {
-    const res = await fetch(`${API_BASE}/api/auth/google`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ credential: response.credential })
-    });
-    if (!res.ok) throw new Error('Google login failed');
-    const data = await res.json();
-    storeSession(data);
-    closeAuthModal();
-  } catch (err) {
-    alert('Google sign‑in failed: ' + err.message);
-  }
-}
-
-function storeSession(data) {
-  localStorage.setItem('deploytual_token', data.access_token);
-  localStorage.setItem('deploytual_user', JSON.stringify(data.user));
-  updateAuthUI();
-}
-
-function logout() {
-  localStorage.removeItem('deploytual_token');
-  localStorage.removeItem('deploytual_user');
-  updateAuthUI();
-  showPage('home');
-}
-
-function updateAuthUI() {
-  const user = JSON.parse(localStorage.getItem('deploytual_user'));
-  const signInBtn = document.getElementById('nav-right-btn');
-  const ctaBtn = document.getElementById('nav-cta');
-  if (user) {
-    signInBtn.textContent = `👤 ${user.name}`;
-    signInBtn.onclick = () => { if (confirm('Logout?')) logout(); };
-    ctaBtn.style.display = 'none';
-  } else {
-    signInBtn.textContent = 'Sign in';
-    signInBtn.onclick = () => openAuthModal('login');
-    ctaBtn.style.display = 'inline-flex';
-  }
-}
-
-// ── WebSocket & Live Toasts ──
-function connectWebSocket() {
-  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  const wsUrl = `${protocol}://${API_BASE.replace(/^https?:\/\//, '')}/ws`;
-  ws = new WebSocket(wsUrl);
-
-  ws.onopen = () => {
-    console.log('[WS] Connected');
-    showToast('🔌 Live updates connected', 'info');
-  };
-
-  ws.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      let msg = '';
-      if (data.event === 'pipeline_completed') {
-        msg = `⚡ Pipeline completed for ${data.file_id}`;
-      } else if (data.event === 'anomaly_detection_completed') {
-        msg = `🔍 Anomalies detected: ${data.anomalies_count} in ${data.file_id}`;
-      } else if (data.event === 'forecast_completed') {
-        msg = `📈 Forecast ready for ${data.file_id}`;
-      } else if (data.event === 'report_generated') {
-        msg = `📄 Report generated for ${data.file_id}`;
-      }
-      if (msg) showToast(msg, 'success');
-    } catch (e) {
-      console.error('WS message error', e);
-    }
-  };
-
-  ws.onclose = () => {
-    console.log('[WS] Disconnected – retrying in 5s');
-    setTimeout(connectWebSocket, 5000);
-  };
-
-  ws.onerror = (err) => {
-    console.error('[WS] Error', err);
-    ws.close();
-  };
-}
-
-function showToast(message, type = 'info') {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), 6000);
-}
-
-// Init Google Sign-In + bind buttons + WebSocket
-window.addEventListener('load', () => {
-  if (typeof google !== 'undefined' && google.accounts) {
-    google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: handleGoogleResponse
-    });
-    google.accounts.id.renderButton(
-      document.getElementById('google-signin-btn'),
-      { theme: 'outline', size: 'large', width: '100%' }
-    );
-  }
-  updateAuthUI();
-
-  document.getElementById('nav-right-btn').addEventListener('click', () => {
-    const user = JSON.parse(localStorage.getItem('deploytual_user'));
-    if (user) {
-      if (confirm('Logout?')) logout();
-    } else {
-      openAuthModal('login');
-    }
+// Drag & drop logic
+document.querySelectorAll('.draggable-step').forEach(el => {
+  el.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('text/plain', el.dataset.step);
   });
-  document.getElementById('nav-cta').addEventListener('click', () => openAuthModal('signup'));
-
-  // Start WebSocket connection
-  connectWebSocket();
 });
 
-renderHistory();
-</script>
-</body>
-</html>
+const canvas = document.getElementById('pipeline-canvas');
+canvas.addEventListener('dragover', e => {
+  e.preventDefault();
+  canvas.classList.add('drag-over');
+});
+canvas.addEventListener('dragleave', () => {
+  canvas.classList.remove('drag-over');
+});
+canvas.addEventListener('drop', e => {
+  e.preventDefault();
+  canvas.classList.remove('drag-over');
+  const step = e.dataTransfer.getData('text/plain');
+  if (!step) return;
+  visualPipelineSteps.push(step);
+  renderVisualPipeline();
+});
+
+function renderVisualPipeline() {
+  canvas.innerHTML = '';
+  if (visualPipelineSteps.length === 0) {
+    canvas.innerHTML = '<span style="color:var(--muted); font-style:italic">Drop steps here to build your pipeline</span>';
+    return;
+  }
+  visualPipelineSteps.forEach((step, idx) => {
+    const chip = document.createElement('div');
+    chip.className = 'pipeline-step-chip';
+    const icons = {clean:'🧹', anomalies:'🔍', forecast:'📈', report:'📄'};
+    chip.innerHTML = `${icons[step] || ''} ${step} <button class="remove-step" data-index="${idx}">×</button>`;
+    canvas.appendChild(chip);
+  });
+  // Add remove functionality
+  document.querySelectorAll('.remove-step').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.target.getAttribute('data-index'));
+      visualPipelineSteps.splice(index, 1);
+      renderVisualPipeline();
+    });
+  });
+}
+
+async function runVisualPipeline() {
+  if (!uploadedFileId) { alert('Please upload a dataset first.'); return; }
+  if (visualPipelineSteps.length === 0) { alert('Please add at least one step to the pipeline.'); return; }
+
+  const instruction = visualPipelineSteps.join(', ');
+  const resultsDiv = document.getElementById('visual-pipeline-results');
+  resultsDiv.innerHTML = '<p>Executing pipeline…</p>';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/pipeline/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_id: uploadedFileId, instruction })
+    });
+    if (!res.ok) throw new Error((await res.json()).detail || 'Pipeline execution failed');
+    const data = await res.json();
+
+    let html = '';
+    data.results.forEach(result => {
+      const isSuccess = result.status === 'success';
+      const color = isSuccess ? 'var(--mint)' : 'var(--danger)';
+      html += `
+        <div style="border:1px solid var(--line); border-radius:14px; padding:16px; background:var(--paper)">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px">
+            <span style="font-family:'JetBrains Mono',monospace; font-size:.75rem; background:${color}; color:#fff; padding:2px 10px; border-radius:100px">${isSuccess ? '✓' : '✗'}</span>
+            <span style="font-family:'Fraunces',serif; font-size:1.1rem; font-weight:500">${escapeHTML(result.step)}</span>
+          </div>
+          <div style="font-size:.85rem; color:var(--muted); line-height:1.5">${formatPipelineResult(result)}</div>
+        </
