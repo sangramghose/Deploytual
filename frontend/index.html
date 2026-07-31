@@ -846,6 +846,17 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
 }
 .fab-item:hover { transform: scale(1.15); background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
+.scroll-top-btn {
+  position: fixed; bottom: 24px; left: 24px; z-index: 999;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--ink); color: var(--paper); border: none;
+  font-size: 1.3rem; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  display: none; align-items: center; justify-content: center;
+  transition: transform 0.2s, background 0.2s, opacity 0.25s;
+  opacity: 0.92;
+}
+.scroll-top-btn:hover { background: var(--coral); transform: scale(1.1); opacity: 1; }
+
 /* Command Palette */
 #command-palette .palette-item {
   padding: 10px 16px;
@@ -1572,6 +1583,8 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
     <button class="fab-item" onclick="copyShareLink()" title="Share dashboard link">🔗</button>
   </div>
 </div>
+
+<button id="scroll-top" class="scroll-top-btn" title="Back to top" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
 <!-- KEYBOARD SHORTCUTS HELP -->
 <div id="shortcuts-help">
@@ -3332,6 +3345,14 @@ window.addEventListener('load', () => {
 document.getElementById('shortcuts-help')?.addEventListener('click', e => {
   if (e.target.id === 'shortcuts-help') closeShortcutsHelp();
 });
+
+// Scroll-to-top button
+const scrollTopBtn = document.getElementById('scroll-top');
+window.addEventListener('scroll', () => {
+  if (scrollTopBtn) {
+    scrollTopBtn.style.display = window.scrollY > 500 ? 'flex' : 'none';
+  }
+}, { passive: true });
 
 renderHistory();
 </script>
