@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Deploytual - Deploy intelligence. Any data. Anywhere.</title>
+<title>Deploytual — Deploy intelligence. Any data. Anywhere.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -504,6 +504,34 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
   opacity: 1;
   transform: scale(1.2);
   background: var(--paper-2);
+}
+
+/* Toast notifications for live WebSocket updates */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.toast {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 0.9rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  animation: slideInToast 0.4s ease;
+  max-width: 350px;
+}
+.toast.success { border-left: 4px solid var(--mint); }
+.toast.info    { border-left: 4px solid var(--azure); }
+@keyframes slideInToast {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
 }
 </style>
 </head>
@@ -1097,6 +1125,9 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
 
 </div>
 
+<!-- Toast container for WebSocket notifications -->
+<div class="toast-container" id="toast-container"></div>
+
 <!-- FOOTER -->
 <footer>
   <div class="foot-brand">
@@ -1147,6 +1178,9 @@ let chatHistory = migrateChatHistory(JSON.parse(localStorage.getItem("chatHistor
 // Speech synthesis globals
 let currentUtterance = null;
 let currentSpeakingMsg = null;
+
+// WebSocket globals
+let ws;
 
 // Cursor
 const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
@@ -2202,7 +2236,58 @@ function updateAuthUI() {
   }
 }
 
-// Init Google Sign-In + bind buttons
+// ── WebSocket & Live Toasts ──
+function connectWebSocket() {
+  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  const wsUrl = `${protocol}://${API_BASE.replace(/^https?:\/\//, '')}/ws`;
+  ws = new WebSocket(wsUrl);
+
+  ws.onopen = () => {
+    console.log('[WS] Connected');
+    showToast('🔌 Live updates connected', 'info');
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      let msg = '';
+      if (data.event === 'pipeline_completed') {
+        msg = `⚡ Pipeline completed for ${data.file_id}`;
+      } else if (data.event === 'anomaly_detection_completed') {
+        msg = `🔍 Anomalies detected: ${data.anomalies_count} in ${data.file_id}`;
+      } else if (data.event === 'forecast_completed') {
+        msg = `📈 Forecast ready for ${data.file_id}`;
+      } else if (data.event === 'report_generated') {
+        msg = `📄 Report generated for ${data.file_id}`;
+      }
+      if (msg) showToast(msg, 'success');
+    } catch (e) {
+      console.error('WS message error', e);
+    }
+  };
+
+  ws.onclose = () => {
+    console.log('[WS] Disconnected – retrying in 5s');
+    setTimeout(connectWebSocket, 5000);
+  };
+
+  ws.onerror = (err) => {
+    console.error('[WS] Error', err);
+    ws.close();
+  };
+}
+
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 6000);
+}
+
+// Init Google Sign-In + bind buttons + WebSocket
 window.addEventListener('load', () => {
   if (typeof google !== 'undefined' && google.accounts) {
     google.accounts.id.initialize({
@@ -2225,6 +2310,9 @@ window.addEventListener('load', () => {
     }
   });
   document.getElementById('nav-cta').addEventListener('click', () => openAuthModal('signup'));
+
+  // Start WebSocket connection
+  connectWebSocket();
 });
 
 renderHistory();
