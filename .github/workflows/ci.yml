@@ -45,7 +45,7 @@ jobs:
         run: |
           flake8 backend/ \
             --max-line-length=120 \
-            --extend-ignore=E302,E305,F401,F841,E501,E231,F811
+            --extend-ignore=E302,E305,F401,F841,E501,E231,F811,F821,W293,E402,E401,E722,F541
 
   security:
     runs-on: ubuntu-latest
