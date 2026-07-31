@@ -281,6 +281,64 @@ body.dark .nav-tabs{background:rgba(244,239,230,.08)}
 .feat-desc{font-size:.88rem;color:var(--muted);line-height:1.55}
 .feat-card:hover .feat-desc{color:currentColor;opacity:.85}
 
+/* ─── TEAM / BUILT BY ─── */
+.team-section{
+  max-width:1400px;margin:0 auto;padding:80px 40px 40px;
+}
+.team-intro{
+  font-size:1.05rem;color:var(--muted);max-width:640px;line-height:1.6;margin:-40px 0 48px;
+}
+.team-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:20px;
+}
+.team-card{
+  display:flex;gap:22px;align-items:flex-start;
+  background:var(--paper-2);border:1px solid var(--line);
+  border-radius:24px;padding:28px;
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+  position:relative;overflow:hidden;
+}
+.team-card:hover{
+  transform:translateY(-4px);border-color:var(--ink);
+  box-shadow:0 24px 50px -20px rgba(24,20,16,.2);
+}
+.team-avatar{
+  width:64px;height:64px;border-radius:18px;flex-shrink:0;
+  background:var(--ink);color:var(--lime);
+  font-family:'Fraunces',serif;font-weight:700;font-size:1.25rem;
+  display:flex;align-items:center;justify-content:center;
+  letter-spacing:-.02em;transform:rotate(-4deg);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.team-card:hover .team-avatar{transform:rotate(3deg) scale(1.06)}
+.team-avatar.alt{background:var(--coral);color:var(--ink);transform:rotate(4deg)}
+.team-card:hover .team-avatar.alt{transform:rotate(-2deg) scale(1.06)}
+.team-role{
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:500;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;
+}
+.team-name{
+  font-family:'Fraunces',serif;font-size:1.45rem;font-weight:500;
+  letter-spacing:-.02em;color:var(--ink);margin-bottom:10px;line-height:1.15;
+}
+.team-bio{
+  font-size:.9rem;color:var(--muted);line-height:1.55;margin-bottom:16px;
+}
+.team-links{display:flex;flex-wrap:wrap;gap:8px}
+.team-link{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:100px;
+  border:1.5px solid var(--line-2);background:var(--paper);
+  color:var(--ink);text-decoration:none;font-size:.8rem;font-weight:500;
+  transition:all .2s;font-family:inherit;
+}
+.team-link:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);transform:translateY(-1px)}
+@media(max-width:768px){
+  .team-grid{grid-template-columns:1fr}
+  .team-section{padding:60px 24px 20px}
+  .team-card{flex-direction:column;gap:16px}
+}
+
 /* ─── SHARED PAGES STYLES ─── */
 .dash{max-width:1400px;margin:0 auto;padding:60px 40px}
 .page-title{font-family:'Fraunces',serif;font-size:clamp(2.2rem,4vw,3.4rem);font-weight:400;letter-spacing:-.035em;color:var(--ink);margin-bottom:10px;line-height:1.05}
@@ -1009,6 +1067,39 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
       </div>
     </div>
   </section>
+
+  <!-- ═════ BUILT BY ═════ -->
+  <section class="team-section" id="team">
+    <div class="section-eyebrow">The builders</div>
+    <h2 class="section-title">Crafted by engineers who <em>ship</em>.</h2>
+    <p class="team-intro">Deploytual was designed, engineered, and shipped end‑to‑end by two builders who care about product depth, AI systems, and real‑world deployment.</p>
+    <div class="team-grid">
+      <article class="team-card">
+        <div class="team-avatar" aria-hidden="true">SK</div>
+        <div class="team-meta">
+          <div class="team-role">Co‑Founder · Full‑Stack &amp; AI</div>
+          <h3 class="team-name">Sangram Keshari Ghose</h3>
+          <p class="team-bio">Product architecture, natural‑language query engine, AutoML surface, and the editorial design system behind Deploytual.</p>
+          <div class="team-links">
+            <a class="team-link" href="mailto:sangramkesharighose@gmail.com" title="Email Sangram">✉ Email</a>
+            <a class="team-link" href="https://www.linkedin.com/in/sangramghose" target="_blank" rel="noopener noreferrer" title="LinkedIn">in LinkedIn</a>
+          </div>
+        </div>
+      </article>
+      <article class="team-card">
+        <div class="team-avatar alt" aria-hidden="true">AK</div>
+        <div class="team-meta">
+          <div class="team-role">Co‑Founder · Backend &amp; Data</div>
+          <h3 class="team-name">Aditya Kumar Maharana</h3>
+          <p class="team-bio">Data pipelines, database connectors, real‑time WebSocket layer, and the systems that keep every query fast and reliable.</p>
+          <div class="team-links">
+            <a class="team-link" href="mailto:adityakumarmaharana187@gmail.com" title="Email Aditya">✉ Email</a>
+            <a class="team-link" href="https://www.linkedin.com/in/adityaku1818" target="_blank" rel="noopener noreferrer" title="LinkedIn">in LinkedIn</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
 </div>
 
 <!-- ═════ UPLOAD ═════ -->
@@ -1458,13 +1549,13 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
   </div>
   <div class="foot-col">
     <h4>Company</h4>
-    <a href="#">Privacy</a>
-    <a href="#">Terms</a>
-    <a href="#">Status</a>
-    <a href="#">Twitter</a>
+    <a href="#" onclick="showPage('home');setTimeout(()=>document.getElementById('team')?.scrollIntoView({behavior:'smooth'}),100)">The team</a>
+    <a href="https://www.linkedin.com/in/sangramghose" target="_blank" rel="noopener noreferrer">Sangram · LinkedIn</a>
+    <a href="https://www.linkedin.com/in/adityaku1818" target="_blank" rel="noopener noreferrer">Aditya · LinkedIn</a>
+    <a href="mailto:sangramkesharighose@gmail.com">Contact</a>
   </div>
   <div class="foot-bottom">
-    <span>© 2026 Deploytual. All rights reserved.</span>
+    <span>© 2026 Deploytual · Built by <strong>Sangram Keshari Ghose</strong> &amp; <strong>Aditya Kumar Maharana</strong></span>
     <span>Built for <strong>Forward Deployed</strong> engineers &amp; <strong>data</strong> teams. ✦</span>
   </div>
 </footer>
@@ -2871,6 +2962,7 @@ const paletteCommands = [
   { name: 'Pipeline Builder', icon: '⚡', action: () => showPage('pipeline'), keywords: ['pipeline', 'etl', 'workflow', 'steps'] },
   { name: 'Query History', icon: '⏱', action: () => showPage('history'), keywords: ['history', 'past', 'queries', 'chats'] },
   { name: 'Go to Home', icon: '🏠', action: () => showPage('home'), keywords: ['home', 'landing', 'start'] },
+  { name: 'Meet the Team', icon: '✦', action: () => { showPage('home'); setTimeout(() => document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' }), 120); }, keywords: ['team', 'builders', 'sangram', 'aditya', 'about', 'creators'] },
   { name: 'Generate PDF Report', icon: '📄', action: () => generateReport(), keywords: ['report', 'pdf', 'export', 'download'] },
   { name: 'Share Dashboard Link', icon: '🔗', action: () => copyShareLink(), keywords: ['share', 'link', 'clipboard', 'copy', 'url'] },
   { name: 'Run Anomaly Detection', icon: '🔍', action: () => { showPage('ml'); setTimeout(() => detectAnomalies(), 150); }, keywords: ['anomaly', 'outlier', 'detect'] },
