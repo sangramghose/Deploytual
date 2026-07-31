@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import io
 from fastapi.testclient import TestClient
 from main import app
@@ -35,4 +39,4 @@ def test_ai_query_local():
     assert response.status_code == 200
     data = response.json()
     assert "answer" in data
-    assert "generated_code" in data   # Explainable AI
+    assert "generated_code" in data
