@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
-from routes import csv_routes, ai_routes, db_routes, ml_routes, report_routes, clean_routes, auth_routes, pipeline_routes
+from routes import csv_routes, ai_routes, db_routes, ml_routes, report_routes, clean_routes, auth_routes, pipeline_routes, langgraph_routes
 from services.websocket_manager import manager      # 👈 import from the new module
 
 os.makedirs(settings.UPLOAD_FOLDER, exist_ok=True)
@@ -35,6 +35,7 @@ app.include_router(report_routes.router)
 app.include_router(clean_routes.router)
 app.include_router(auth_routes.router)
 app.include_router(pipeline_routes.router)
+app.include_router(langgraph_routes.router)  # 👈 LangGraph agent endpoint
 
 @app.get("/")
 def read_root():
