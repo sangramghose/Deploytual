@@ -4,6 +4,10 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Deploytual – AI Analytics | Pipeline Builder | AutoML</title>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#181410"/>
+<meta name="description" content="Deploy intelligence on any data. Natural language queries, AutoML, pipelines, and explainable AI."/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23181410' width='100' height='100' rx='20'/%3E%3Ctext x='50' y='68' text-anchor='middle' font-size='52' fill='%23d1ff3a' font-family='serif' font-weight='900'%3ED%3C/text%3E%3C/svg%3E"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -605,6 +609,41 @@ footer::before{content:"Deploytual";position:absolute;bottom:-40px;left:0;right:
 .toast.success { border-left: 4px solid var(--mint); }
 .toast.info    { border-left: 4px solid var(--azure); }
 .toast.error   { border-left: 4px solid var(--danger); }
+.toast-row { display:flex; align-items:center; gap:12px; justify-content:space-between; }
+.toast-undo {
+  background:var(--lime); color:var(--ink); border:none; border-radius:8px;
+  padding:4px 10px; font-size:0.75rem; font-weight:600; cursor:pointer;
+  font-family:inherit; white-space:nowrap;
+}
+.toast-undo:hover { background:var(--coral); color:var(--paper); }
+@keyframes shimmer {
+  0% { opacity: 0.35; }
+  50% { opacity: 1; }
+  100% { opacity: 0.35; }
+}
+.skeleton-loader div { animation: shimmer 1.4s ease-in-out infinite; }
+#shortcuts-help {
+  position:fixed; inset:0; z-index:20001; background:rgba(24,20,16,0.55);
+  backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center;
+}
+#shortcuts-help.open { display:flex; }
+.shortcuts-panel {
+  background:var(--paper); border:1px solid var(--line-2); border-radius:20px;
+  width:min(480px,92vw); padding:28px; box-shadow:0 24px 60px rgba(0,0,0,0.3);
+}
+.shortcuts-panel h3 {
+  font-family:'Fraunces',serif; font-size:1.4rem; margin-bottom:16px; color:var(--ink);
+}
+.shortcut-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 0; border-bottom:1px solid var(--line); font-size:0.9rem; color:var(--ink);
+}
+.shortcut-row:last-child { border-bottom:none; }
+.shortcut-row kbd {
+  font-family:'JetBrains Mono',monospace; font-size:0.72rem;
+  background:var(--paper-2); border:1px solid var(--line-2);
+  padding:4px 8px; border-radius:6px; color:var(--muted);
+}
 @keyframes slideInToast {
   from { transform: translateX(100%); opacity: 0; }
   to   { transform: translateX(0); opacity: 1; }
@@ -1258,6 +1297,7 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
     <div class="chart-container">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px;flex-wrap:wrap">
         <input id="table-search" class="form-input" placeholder="🔍 Search rows..." style="max-width:340px;flex:1"/>
+        <button class="btn-secondary" onclick="exportTableToCSV()">📥 Export CSV</button>
         <button class="btn-secondary" onclick="showPage('dashboard')">← Back to dashboard</button>
       </div>
       <div id="table-content"></div>
@@ -1530,6 +1570,21 @@ body.dark .data-table tbody tr:hover { background: rgba(209,255,58,.15); }
     <button class="fab-item" onclick="showPage('pipeline')" title="Pipeline builder">⚡</button>
     <button class="fab-item" onclick="generateReport()" title="Download PDF report">📄</button>
     <button class="fab-item" onclick="copyShareLink()" title="Share dashboard link">🔗</button>
+  </div>
+</div>
+
+<!-- KEYBOARD SHORTCUTS HELP -->
+<div id="shortcuts-help">
+  <div class="shortcuts-panel">
+    <h3>Keyboard shortcuts</h3>
+    <div class="shortcut-row"><span>Command palette</span><kbd>Ctrl / ⌘ K</kbd></div>
+    <div class="shortcut-row"><span>Upload dataset</span><kbd>Ctrl / ⌘ U</kbd></div>
+    <div class="shortcut-row"><span>Dashboard</span><kbd>Ctrl / ⌘ D</kbd></div>
+    <div class="shortcut-row"><span>Ask AI</span><kbd>Ctrl / ⌘ A</kbd></div>
+    <div class="shortcut-row"><span>Pipeline builder</span><kbd>Ctrl / ⌘ P</kbd></div>
+    <div class="shortcut-row"><span>This help panel</span><kbd>Ctrl / ⌘ /</kbd></div>
+    <div class="shortcut-row"><span>Close overlays</span><kbd>Esc</kbd></div>
+    <button class="btn-secondary" style="margin-top:18px;width:100%" onclick="closeShortcutsHelp()">Close</button>
   </div>
 </div>
 
@@ -2081,7 +2136,12 @@ async function sendMessage(){
   assistantMsg.className='message assistant';
   const assistantContent=document.createElement('div');
   assistantContent.className='message-content';
-  assistantContent.textContent='Analyzing...';
+  assistantContent.innerHTML = `
+    <div class="skeleton-loader" style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
+      <div style="height:12px;background:var(--paper-2);border-radius:4px;width:80%"></div>
+      <div style="height:12px;background:var(--paper-2);border-radius:4px;width:60%"></div>
+      <div style="height:12px;background:var(--paper-2);border-radius:4px;width:70%"></div>
+    </div>`;
   assistantMsg.appendChild(assistantContent);
   messagesDiv.appendChild(assistantMsg);
   messagesDiv.scrollTop=messagesDiv.scrollHeight;
@@ -2091,7 +2151,6 @@ async function sendMessage(){
     assistantContent.textContent='Please upload a dataset or connect a database first.';
     return;
   }
-  assistantContent.textContent = chat.sourceType === "mysql" ? "Analyzing the connected database..." : "Analyzing the uploaded dataset...";
   chat.messages.push({ role:"user", text:msg });
   try{
     let response;
@@ -2553,8 +2612,25 @@ canvas.addEventListener('drop', e => {
   const step = e.dataTransfer.getData('text/plain');
   if (!step) return;
   visualPipelineSteps.push(step);
+  savePipelineState();
   renderVisualPipeline();
 });
+
+function savePipelineState() {
+  try {
+    localStorage.setItem('deploytual_pipeline_steps', JSON.stringify(visualPipelineSteps));
+  } catch (_) {}
+}
+
+function loadPipelineState() {
+  try {
+    const saved = localStorage.getItem('deploytual_pipeline_steps');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) visualPipelineSteps = parsed;
+    }
+  } catch (_) {}
+}
 
 function renderVisualPipeline() {
   canvas.innerHTML = '';
@@ -2566,15 +2642,24 @@ function renderVisualPipeline() {
     const chip = document.createElement('div');
     chip.className = 'pipeline-step-chip';
     const icons = {clean:'🧹', anomalies:'🔍', forecast:'📈', report:'📄'};
-    chip.innerHTML = `${icons[step] || ''} ${step} <button class="remove-step" data-index="${idx}">×</button>`;
+    chip.innerHTML = `${icons[step] || ''} ${step} <button class="remove-step" data-index="${idx}" type="button">×</button>`;
     canvas.appendChild(chip);
   });
-  // Add remove functionality
   document.querySelectorAll('.remove-step').forEach(btn => {
     btn.addEventListener('click', (e) => {
-      const index = parseInt(e.target.getAttribute('data-index'));
+      e.stopPropagation();
+      const index = parseInt(e.target.getAttribute('data-index'), 10);
+      if (Number.isNaN(index)) return;
+      const removedStep = visualPipelineSteps[index];
       visualPipelineSteps.splice(index, 1);
+      savePipelineState();
       renderVisualPipeline();
+      showToast(`Removed “${removedStep}” step`, 'info', () => {
+        visualPipelineSteps.splice(index, 0, removedStep);
+        savePipelineState();
+        renderVisualPipeline();
+        showToast('Step restored', 'success');
+      });
     });
   });
 }
@@ -2886,16 +2971,68 @@ function connectWebSocket() {
   };
 }
 
-function showToast(message, type = 'info') {
+function showToast(message, type = 'info', onUndo = null) {
   const container = document.getElementById('toast-container');
   if (!container) return;
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  toast.textContent = message;
+  if (typeof onUndo === 'function') {
+    const row = document.createElement('div');
+    row.className = 'toast-row';
+    const text = document.createElement('span');
+    text.textContent = message;
+    const undoBtn = document.createElement('button');
+    undoBtn.className = 'toast-undo';
+    undoBtn.type = 'button';
+    undoBtn.textContent = 'Undo';
+    undoBtn.onclick = () => {
+      toast.remove();
+      onUndo();
+    };
+    row.appendChild(text);
+    row.appendChild(undoBtn);
+    toast.appendChild(row);
+  } else {
+    toast.textContent = message;
+  }
   container.appendChild(toast);
-  setTimeout(() => toast.remove(), 6000);
-  // Also feed the notification center
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, onUndo ? 8000 : 6000);
   addNotification(message, type);
+}
+
+function exportTableToCSV() {
+  const rows = currentTableRows;
+  if (!rows || !rows.length) {
+    showToast('No table data to export.', 'error');
+    return;
+  }
+  const headers = Object.keys(rows[0]);
+  const csv = [
+    headers.join(','),
+    ...rows.map(r => headers.map(h => {
+      const val = (r[h] ?? '').toString().replace(/"/g, '""');
+      return `"${val}"`;
+    }).join(','))
+  ].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `deploytual_export_${Date.now()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('📥 CSV exported', 'success');
+}
+
+function openShortcutsHelp() {
+  const el = document.getElementById('shortcuts-help');
+  if (el) el.classList.add('open');
+}
+function closeShortcutsHelp() {
+  const el = document.getElementById('shortcuts-help');
+  if (el) el.classList.remove('open');
 }
 
 // ── Dark Mode Toggle ──
@@ -2982,6 +3119,8 @@ const paletteCommands = [
   { name: 'Meet the Team', icon: '✦', action: () => { showPage('home'); setTimeout(() => document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' }), 120); }, keywords: ['team', 'builders', 'sangram', 'aditya', 'about', 'creators'] },
   { name: 'Generate PDF Report', icon: '📄', action: () => generateReport(), keywords: ['report', 'pdf', 'export', 'download'] },
   { name: 'Share Dashboard Link', icon: '🔗', action: () => copyShareLink(), keywords: ['share', 'link', 'clipboard', 'copy', 'url'] },
+  { name: 'Export Table CSV', icon: '📥', action: () => exportTableToCSV(), keywords: ['export', 'csv', 'download', 'table'] },
+  { name: 'Keyboard Shortcuts', icon: '⌨', action: () => openShortcutsHelp(), keywords: ['shortcuts', 'keys', 'hotkeys', 'help'] },
   { name: 'Run Anomaly Detection', icon: '🔍', action: () => { showPage('ml'); setTimeout(() => detectAnomalies(), 150); }, keywords: ['anomaly', 'outlier', 'detect'] },
   { name: 'Toggle Dark Mode', icon: '🌓', action: () => {
       const btn = document.getElementById('theme-toggle');
@@ -3067,6 +3206,7 @@ function executePaletteCommand(index) {
 
 // Global keyboard: Ctrl/Cmd+K toggles palette, Esc closes, arrows/enter navigate when open
 document.addEventListener('keydown', e => {
+  // Command palette always available
   if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
     e.preventDefault();
     e.stopPropagation();
@@ -3074,24 +3214,44 @@ document.addEventListener('keydown', e => {
     else openPalette();
     return;
   }
-  if (!paletteOpen) return;
-  if (e.key === 'Escape') {
+  // Shortcuts help
+  if ((e.ctrlKey || e.metaKey) && e.key === '/') {
     e.preventDefault();
-    closePalette();
+    const help = document.getElementById('shortcuts-help');
+    if (help && help.classList.contains('open')) closeShortcutsHelp();
+    else openShortcutsHelp();
     return;
   }
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    paletteActiveIndex = Math.min(paletteActiveIndex + 1, Math.max(filteredCommands.length - 1, 0));
-    updatePaletteActive();
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    paletteActiveIndex = Math.max(paletteActiveIndex - 1, 0);
-    updatePaletteActive();
-  } else if (e.key === 'Enter') {
-    e.preventDefault();
-    executePaletteCommand(paletteActiveIndex);
+  if (e.key === 'Escape') {
+    if (paletteOpen) { e.preventDefault(); closePalette(); return; }
+    const help = document.getElementById('shortcuts-help');
+    if (help && help.classList.contains('open')) { e.preventDefault(); closeShortcutsHelp(); return; }
   }
+  // Palette navigation when open
+  if (paletteOpen) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      paletteActiveIndex = Math.min(paletteActiveIndex + 1, Math.max(filteredCommands.length - 1, 0));
+      updatePaletteActive();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      paletteActiveIndex = Math.max(paletteActiveIndex - 1, 0);
+      updatePaletteActive();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      executePaletteCommand(paletteActiveIndex);
+    }
+    return;
+  }
+  // Power-user page shortcuts (ignore when typing)
+  const tag = (document.activeElement && document.activeElement.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (!(e.ctrlKey || e.metaKey)) return;
+  const key = e.key.toLowerCase();
+  if (key === 'u') { e.preventDefault(); showPage('upload'); }
+  else if (key === 'd') { e.preventDefault(); showPage('dashboard'); }
+  else if (key === 'a') { e.preventDefault(); showPage('ask'); }
+  else if (key === 'p') { e.preventDefault(); showPage('pipeline'); }
 });
 
 if (paletteInput) {
@@ -3129,7 +3289,7 @@ if (paletteOverlay) {
   });
 }
 
-// Init Google Sign-In + bind buttons + WebSocket
+// Init Google Sign-In + bind buttons + WebSocket + PWA + pipeline restore
 window.addEventListener('load', () => {
   if (typeof google !== 'undefined' && google.accounts) {
     google.accounts.id.initialize({
@@ -3153,8 +3313,24 @@ window.addEventListener('load', () => {
   });
   document.getElementById('nav-cta').addEventListener('click', () => openAuthModal('signup'));
 
+  // Restore visual pipeline from localStorage
+  loadPipelineState();
+  if (typeof renderVisualPipeline === 'function') renderVisualPipeline();
+
   // Start WebSocket connection
   connectWebSocket();
+
+  // Register service worker (PWA)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').catch(err => {
+      console.log('SW registration skipped:', err.message);
+    });
+  }
+});
+
+// Close shortcuts help on backdrop click
+document.getElementById('shortcuts-help')?.addEventListener('click', e => {
+  if (e.target.id === 'shortcuts-help') closeShortcutsHelp();
 });
 
 renderHistory();
