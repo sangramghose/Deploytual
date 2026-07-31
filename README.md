@@ -2,6 +2,11 @@
 
 ### Deploy intelligence. Any data. Anywhere.
 
+[![CI Pipeline](https://github.com/sangramghose/Deploytual/actions/workflows/ci.yml/badge.svg)](https://github.com/sangramghose/Deploytual/actions/workflows/ci.yml)
+[![Docker Image](https://github.com/sangramghose/Deploytual/actions/workflows/docker.yml/badge.svg)](https://github.com/sangramghose/Deploytual/actions/workflows/docker.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://deploytual.netlify.app)
+
 > An AI-powered analytics platform that unifies data connectivity, natural language querying, automated machine learning, and one-click reporting into a single, deployable engine—ready to be dropped into any environment.
 
 🌐 **Live Demo:** https://deploytual.netlify.app  
