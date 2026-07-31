@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploytual-frontend
+  labels:
+    app: deploytual
+    tier: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deploytual
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: deploytual
+        tier: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html
+        configMap:
+          name: deploytual-frontend-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deploytual-frontend-config
+data:
+  index.html: |
+    <!-- Paste the entire content of your frontend/index.html here -->
