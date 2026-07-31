@@ -1,5 +1,5 @@
 import os
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langgraph.prebuilt import create_react_agent
 from langchain_core.tools import tool
 from services.ai_service import answer_question_local
@@ -61,10 +61,10 @@ _agent = None
 def get_agent():
     global _agent
     if _agent is None:
-        llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash",   # ✅ Changed from "gemini-pro"
+        llm = ChatGroq(
+            model="llama3-70b-8192",          # free & powerful
             temperature=0,
-            google_api_key=os.getenv("GOOGLE_API_KEY")
+            api_key=os.getenv("GROQ_API_KEY")
         )
         tools = [
             query_uploaded_data,
