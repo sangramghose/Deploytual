@@ -1,0 +1,8 @@
+[flake8]
+max-line-length = 120
+extend-ignore =
+    # Ignore common non‑critical style warnings
+    E302,  # expected 2 blank lines
+    E305,  # expected 2 blank lines after class or function definition
+    F401,  # imported but unused
+    F841,  # local variable assigned but not used
