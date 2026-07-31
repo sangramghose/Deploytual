@@ -12,17 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-
       - name: Install dependencies
         run: |
           cd backend
           pip install -r requirements.txt
-
       - name: Run tests
         run: |
           cd backend
@@ -32,15 +29,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-
       - name: Install linter
         run: pip install flake8
-
       - name: Lint with flake8
         run: |
           flake8 backend/ \
@@ -51,14 +45,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-
       - name: Install bandit
         run: pip install bandit
-
       - name: Run security scan
         run: bandit -r backend/ -ll --exit-zero
+
+  helm-lint:                                # ← NEW JOB
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+      - name: Lint Helm chart
+        run: helm lint ./helm/deploytual
