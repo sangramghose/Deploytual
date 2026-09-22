@@ -1,3 +1,4 @@
+from services.csv_service import load_dataframe
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 from prophet import Prophet

@@ -1,3 +1,4 @@
+import pandas as pd
 import logging
 from services.csv_service import load_dataframe
 from services.clean_service import suggest_cleaning

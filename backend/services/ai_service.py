@@ -1,3 +1,6 @@
+import re
+from services.csv_service import load_dataframe
+
 def answer_question_local(file_id: str, question: str) -> dict:
     """
     Local, deterministic Pandas analysis.
@@ -19,7 +22,12 @@ def answer_question_local(file_id: str, question: str) -> dict:
     # Simple keyword-based analysis
     if "highest" in question_lower or "top" in question_lower or "max" in question_lower:
         if numeric_cols:
-            col = numeric_cols[0]  # naive: pick first numeric
+            # Prefer a numeric column explicitly named in the question.
+            # Fall back to the first numeric column when no column is mentioned.
+            col = next(
+                (c for c in numeric_cols if str(c).lower() in question_lower),
+                numeric_cols[0],
+            )
             max_val = df[col].max()
             row = df[df[col] == max_val].iloc[0].to_dict()
             answer = f"The highest {col} is {max_val}, found in:\n{row}"
